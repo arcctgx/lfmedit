@@ -49,10 +49,6 @@ checkAuthTokens() {
     logInfo "all necessary authentication tokens are set"
 }
 
-unquote() {
-    echo "${1}" | sed -e 's/^"//' -e 's/"$//' -e 's/\\"/"/g'
-}
-
 requestScrobbleData() {
     apiResponsePath="$(mktemp -t lfmquery.json.XXXXXX)"
     logDebug "apiResponsePath = ${apiResponsePath}"
@@ -90,7 +86,7 @@ parseApiResponse() {
     # "now playing" (optional), and the one we want (always last).
     # The attribute "total" holds the number of returned scrobbles,
     # excluding "now playing" one. This should be equal to one.
-    local -r total=$(unquote "$(jq '.recenttracks."@attr".total' "${apiResponsePath}")")
+    local -r total=$(jq -r '.recenttracks."@attr".total' "${apiResponsePath}")
     logDebug "total = ${total}"
     if [ "${total}" -ne 1 ]; then
         logError "unexpected number of scrobbles in API response! (got ${total} instead of 1)"
@@ -99,7 +95,7 @@ parseApiResponse() {
     fi
 
     # Compare timestamps to make sure we got the scrobble we wanted.
-    local -r uts=$(unquote "$(jq '.recenttracks.track[-1].date.uts' "${apiResponsePath}")")
+    local -r uts=$(jq -r '.recenttracks.track[-1].date.uts' "${apiResponsePath}")
     if [ "${uts}" -ne "${timestamp}" ]; then
         logError "scrobble timestamp mismatch! (expected: ${timestamp}, received: ${uts})"
         rm --force ${verbose} "${apiResponsePath}"
@@ -108,9 +104,9 @@ parseApiResponse() {
 
     logDebug "got scrobble with matching timestamp: uts = $uts"
 
-    oldTitle=$(unquote "$(jq '.recenttracks.track[-1].name' "${apiResponsePath}")")
-    oldArtist=$(unquote "$(jq '.recenttracks.track[-1].artist["#text"]' "${apiResponsePath}")")
-    oldAlbum=$(unquote "$(jq '.recenttracks.track[-1].album["#text"]' "${apiResponsePath}")")
+    oldTitle=$(jq -r '.recenttracks.track[-1].name' "${apiResponsePath}")
+    oldArtist=$(jq -r '.recenttracks.track[-1].artist["#text"]' "${apiResponsePath}")
+    oldAlbum=$(jq -r '.recenttracks.track[-1].album["#text"]' "${apiResponsePath}")
     logDebug "title = ${oldTitle}, artist = ${oldArtist}, album = ${oldAlbum}"
 
     rm --force ${verbose} ${apiResponsePath}
