@@ -86,23 +86,31 @@ handleApiErrors() {
 parseApiResponse() {
     handleApiErrors
 
-    # We're requesting one page of output with one scrobble per page.
-    # There could be one or two scrobbles in query result (two in case
-    # last.fm also returns "now playing" track).
-    local -r numTracks=$(jq ".recenttracks.track | length" "${apiResponsePath}")
-    if [ "${numTracks}" -ne 1 -a "${numTracks}" -ne 2 ]; then
-        logError "unexpected numTracks = ${numTracks}, exiting!"
+    # We expect that there are at most two tracks in the response:
+    # "now playing" (optional), and the one we want (always last).
+    # The attribute "total" holds the number of returned scrobbles,
+    # excluding "now playing" one. This should be equal to one.
+    local -r total=$(unquote "$(jq '.recenttracks."@attr".total' "${apiResponsePath}")")
+    logDebug "total = ${total}"
+    if [ "${total}" -ne 1 ]; then
+        logError "unexpected number of scrobbles in API response! (got ${total} instead of 1)"
         rm --force ${verbose} "${apiResponsePath}"
-        exit
+        exit 4
     fi
 
-    # If two tracks are returned, the first one is "now playing" - ignore it.
-    local -r index=$((numTracks-1))
-    logDebug "numTracks = ${numTracks}, index = ${index}"
+    # Compare timestamps to make sure we got the scrobble we wanted.
+    local -r uts=$(unquote "$(jq '.recenttracks.track[-1].date.uts' "${apiResponsePath}")")
+    if [ "${uts}" -ne "${timestamp}" ]; then
+        logError "scrobble timestamp mismatch! (expected: ${timestamp}, received: ${uts})"
+        rm --force ${verbose} "${apiResponsePath}"
+        exit 4
+    fi
 
-    oldTitle=$(unquote "$(jq ".recenttracks.track[${index}].name" "${apiResponsePath}")")
-    oldArtist=$(unquote "$(jq ".recenttracks.track[${index}].artist[\"#text\"]" "${apiResponsePath}")")
-    oldAlbum=$(unquote "$(jq ".recenttracks.track[${index}].album[\"#text\"]" "${apiResponsePath}")")
+    logDebug "got scrobble with matching timestamp: uts = $uts"
+
+    oldTitle=$(unquote "$(jq '.recenttracks.track[-1].name' "${apiResponsePath}")")
+    oldArtist=$(unquote "$(jq '.recenttracks.track[-1].artist["#text"]' "${apiResponsePath}")")
+    oldAlbum=$(unquote "$(jq '.recenttracks.track[-1].album["#text"]' "${apiResponsePath}")")
     logDebug "title = ${oldTitle}, artist = ${oldArtist}, album = ${oldAlbum}"
 
     rm --force ${verbose} ${apiResponsePath}
