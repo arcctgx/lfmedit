@@ -60,12 +60,12 @@ requestScrobbleData() {
     local -r page=1                     # ...and only the first page of results.
 
     logDebug "username = ${username}, timeFrom = ${timeFrom}, timeTo = ${timeTo}"
-    curl ${silent} --output "${apiResponsePath}" "${apiRoot}?method=user.getrecenttracks&api_key=${LASTFM_API_KEY}&user=${username}&format=json&from=${timeFrom}&to=${timeTo}&limit=${perPage}&page=${page}"
+    curl ${silent} -o "${apiResponsePath}" "${apiRoot}?method=user.getrecenttracks&api_key=${LASTFM_API_KEY}&user=${username}&format=json&from=${timeFrom}&to=${timeTo}&limit=${perPage}&page=${page}"
     local -r curlStatus="${?}"
 
     if [ ${curlStatus} -ne 0 ]; then
         logError "last.fm API request failed! curl error = ${curlStatus}"
-        rm --force ${verbose} "${apiResponsePath}"
+        rm -f ${verbose} "${apiResponsePath}"
         exit 2
     fi
 
@@ -90,7 +90,7 @@ parseApiResponse() {
     logDebug "total = ${total}"
     if [ "${total}" -ne 1 ]; then
         logError "unexpected number of scrobbles in API response! (got ${total} instead of 1)"
-        rm --force ${verbose} "${apiResponsePath}"
+        rm -f ${verbose} "${apiResponsePath}"
         exit 4
     fi
 
@@ -98,7 +98,7 @@ parseApiResponse() {
     local -r uts=$(jq -r '.recenttracks.track[-1].date.uts' "${apiResponsePath}")
     if [ "${uts}" -ne "${timestamp}" ]; then
         logError "scrobble timestamp mismatch! (expected: ${timestamp}, received: ${uts})"
-        rm --force ${verbose} "${apiResponsePath}"
+        rm -f ${verbose} "${apiResponsePath}"
         exit 4
     fi
 
@@ -109,7 +109,7 @@ parseApiResponse() {
     oldAlbum=$(jq -r '.recenttracks.track[-1].album["#text"]' "${apiResponsePath}")
     logDebug "title = ${oldTitle}, artist = ${oldArtist}, album = ${oldAlbum}"
 
-    rm --force ${verbose} ${apiResponsePath}
+    rm -f ${verbose} ${apiResponsePath}
     apiResponsePath=""
 }
 
