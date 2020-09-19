@@ -12,16 +12,16 @@ fi
 
 logDebug() {
     if [ "${DEBUG}" -ge 1 ]; then
-        echo -e "\e[90mDBG: ${1}\e[0m"
+        echo -e "\e[90mDBG: ${FUNCNAME[1]}(): ${@}\e[0m"
     fi
 }
 
 logInfo() {
-    echo "INF: ${1}"
+    echo "INF: ${FUNCNAME[1]}(): ${@}"
 }
 
 logError() {
-    echo -e "\e[31mERR: ${1}\e[0m"
+    echo -e "\e[31mERR: ${FUNCNAME[1]}(): ${@}\e[0m"
 }
 
 checkAuthTokens() {
