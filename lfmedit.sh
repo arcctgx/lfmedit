@@ -31,12 +31,11 @@ logError() {
 parseArguments() {
     # TODO implement parsing of command-line arguments
     logDebug "args = ${@}"
-    username="${LASTFM_USERNAME}"
     timestamp="${1}"
 }
 
 checkAuthTokens() {
-    if [ -z "${username}" ]; then
+    if [ -z "${LASTFM_USERNAME}" ]; then
         logError "last.fm username not provided, exiting!"
         exit 1
     elif [ -z ${LASTFM_API_KEY} ]; then
@@ -63,8 +62,8 @@ requestScrobbleData() {
     local -r perPage=1                  # request one scrobble per page...
     local -r page=1                     # ...and only the first page of results.
 
-    logDebug "username = ${username}, timeFrom = ${timeFrom}, timeTo = ${timeTo}"
-    curl ${silent} -o "${apiResponsePath}" "${apiRoot}?method=user.getrecenttracks&api_key=${LASTFM_API_KEY}&user=${username}&format=json&from=${timeFrom}&to=${timeTo}&limit=${perPage}&page=${page}"
+    logDebug "username = ${LASTFM_USERNAME}, timeFrom = ${timeFrom}, timeTo = ${timeTo}"
+    curl ${silent} -o "${apiResponsePath}" "${apiRoot}?method=user.getrecenttracks&api_key=${LASTFM_API_KEY}&user=${LASTFM_USERNAME}&format=json&from=${timeFrom}&to=${timeTo}&limit=${perPage}&page=${page}"
     local -r curlStatus="${?}"
 
     if [ ${curlStatus} -ne 0 ]; then
@@ -130,8 +129,8 @@ requestScrobbleEdit() {
         local -r originalAlbumArtist="${originalArtist}"
     fi
 
-    local -r url="https://www.last.fm/user/${username}/library/edit?edited-variation=recent-track"
-    local -r referer="Referer: https://www.last.fm/user/${username}"
+    local -r url="https://www.last.fm/user/${LASTFM_USERNAME}/library/edit?edited-variation=recent-track"
+    local -r referer="Referer: https://www.last.fm/user/${LASTFM_USERNAME}"
     local -r content="Content-Type: application/x-www-form-urlencoded; charset=UTF-8"
     local -r cookies="Cookie: csrftoken=${LASTFM_CSRF}; sessionid=${LASTFM_SESSION_ID}"
     local request=""
@@ -167,7 +166,6 @@ main() {
     parseEditResponse
 }
 
-username=""
 timestamp=""
 originalTitle=""
 originalArtist=""
