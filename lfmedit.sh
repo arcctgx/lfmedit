@@ -96,13 +96,13 @@ parseApiResponse() {
 
     # Compare timestamps to make sure we got the scrobble we wanted.
     local -r uts=$(jq -r '.recenttracks.track[-1].date.uts' "${apiResponsePath}")
-    if [ "${uts}" -ne "${timestamp}" ]; then
+    if [ "${uts}" -eq "${timestamp}" ]; then
+        logDebug "got scrobble with matching timestamp: uts = $uts"
+    else
         logError "scrobble timestamp mismatch! (expected: ${timestamp}, received: ${uts})"
         rm -f ${verbose} "${apiResponsePath}"
         exit 4
     fi
-
-    logDebug "got scrobble with matching timestamp: uts = $uts"
 
     oldTitle=$(jq -r '.recenttracks.track[-1].name' "${apiResponsePath}")
     oldArtist=$(jq -r '.recenttracks.track[-1].artist["#text"]' "${apiResponsePath}")
