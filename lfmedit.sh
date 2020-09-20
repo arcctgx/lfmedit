@@ -1,17 +1,7 @@
 #!/bin/bash
 
-DEBUG=${DEBUG:-0}
-
-if [ "${DEBUG}" -ge 2 ]; then
-    verbose="--verbose"
-    silent=""
-else
-    verbose=""
-    silent="--silent"
-fi
-
 logDebug() {
-    if [ "${DEBUG}" -ge 1 ]; then
+    if [ "${debugLevel}" -ge 1 ]; then
         echo -e "\e[90mDBG: ${FUNCNAME[1]}(): ${@}\e[0m"
     fi
 }
@@ -49,10 +39,62 @@ usage() {
     exit 1
 }
 
+checkMandatoryParameters() {
+    if [ -z "${timestamp}" ]; then
+        logError "Unix timestamp (-u) must be provided!"
+        return 1
+    fi
+
+    if [ -z "${newTitle}" -a -z "${newArtist}" -a -z "${newAlbum}" -a -z "${newAlbumArtist}" ]; then
+        logError "At least one of -t/-a/-b/-z parameters must be provided!"
+        return 1
+    fi
+
+    return 0
+}
+
 parseArguments() {
-    # TODO implement parsing of command-line arguments
+    while getopts ":u:t:a:b:z:Z:d" options; do
+        case "${options}" in
+            u)
+                timestamp="${OPTARG}"
+                ;;
+            t)
+                newTitle="${OPTARG}"
+                ;;
+            a)
+                newArtist="${OPTARG}"
+                ;;
+            b)
+                newAlbum="${OPTARG}"
+                ;;
+            z)
+                newAlbumArtist="${OPTARG}"
+                ;;
+            Z)
+                originalAlbumArtist="${OPTARG}"
+                ;;
+            d)
+                ((debugLevel++))
+                ;;
+        esac
+    done
+
+    if [ "${debugLevel}" -ge 2 ]; then
+        verbose="--verbose"
+        silent=""
+    else
+        verbose=""
+        silent="--silent"
+    fi
+
     logDebug "args = ${@}"
-    timestamp="${1}"
+
+    if ! checkMandatoryParameters; then
+        logError "Missing mandatory parameters!"
+        echo
+        usage
+    fi
 }
 
 checkAuthTokens() {
@@ -93,7 +135,7 @@ requestScrobbleData() {
         exit 2
     fi
 
-    if [ "${DEBUG}" -ge 2 ]; then
+    if [ "${debugLevel}" -ge 2 ]; then
         jq --monochrome-output . "${apiResponsePath}"
     fi
 }
@@ -131,7 +173,15 @@ parseApiResponse() {
     originalTitle=$(jq -r '.recenttracks.track[-1].name' "${apiResponsePath}")
     originalArtist=$(jq -r '.recenttracks.track[-1].artist["#text"]' "${apiResponsePath}")
     originalAlbum=$(jq -r '.recenttracks.track[-1].album["#text"]' "${apiResponsePath}")
-    logDebug "title = ${originalTitle}, artist = ${originalArtist}, album = ${originalAlbum}"
+    logDebug "originalTitle = ${originalTitle}, originalArtist = ${originalArtist}, originalAlbum = ${originalAlbum}"
+
+    # There's no way to get original album artist from last.fm API.
+    # In most cases this will be the same as track artist.
+    if [ -z "${originalAlbumArtist}" ]; then
+        logWarning "assuming original album artist is the same as original track artist (use -Z to override)"
+        originalAlbumArtist="${originalArtist}"
+    fi
+    logDebug "originalAlbumArtist = ${originalAlbumArtist}"
 
     rm -f ${verbose} ${apiResponsePath}
     apiResponsePath=""
@@ -141,14 +191,33 @@ urlEncode() {
     echo -n "${1}" | jq --slurp --raw-input --raw-output @uri
 }
 
-requestScrobbleEdit() {
-    # There's no way to get original album artist from last.fm API.
-    # In most cases this will be the same as track artist.
-    # TODO allow setting original album artist from command line.
-    if [ -z "${originalAlbumArtist}" ]; then
-        logWarning "assuming original album artist is ${originalArtist}"
-        local -r originalAlbumArtist="${originalArtist}"
+setNewScrobbleData() {
+    if [ -z "${newTitle}" ]; then
+        newTitle="${originalTitle}"
     fi
+
+    if [ -z "${newArtist}" ]; then
+        newArtist="${originalArtist}"
+    fi
+
+    if [ -z "${newAlbum}" ]; then
+        newAlbum="${originalAlbum}"
+    fi
+
+    if [ -z "${newAlbumArtist}" ]; then
+        newAlbumArtist="${originalAlbumArtist}"
+    fi
+
+    logDebug "newTitle = ${newTitle}, newArtist = ${newArtist}, newAlbum = ${newAlbum}, newAlbumArtist = ${newAlbumArtist}"
+}
+
+printEditData() {
+    echo -e "\e[31m-${timestamp}\t${originalTitle}\t${originalArtist}\t${originalAlbum}\t${originalAlbumArtist}\e[0m"
+    echo -e "\e[32m+${timestamp}\t${newTitle}\t${newArtist}\t${newAlbum}\t${newAlbumArtist}\e[0m"
+}
+
+requestScrobbleEdit() {
+    setNewScrobbleData
 
     local -r url="https://www.last.fm/user/${LASTFM_USERNAME}/library/edit?edited-variation=recent-track"
     local -r referer="Referer: https://www.last.fm/user/${LASTFM_USERNAME}"
@@ -168,7 +237,9 @@ requestScrobbleEdit() {
     request+="&album_artist_name_original=$(urlEncode "${originalAlbumArtist}")"
     request+="&submit=edit-scrobble"
 
-    logDebug "cookies = ${cookies}"
+    logInfo "This is the edit that will be applied:"
+    printEditData
+
     logDebug "request = ${request}"
 }
 
@@ -179,6 +250,20 @@ parseEditResponse() {
 }
 
 main() {
+    debugLevel=0
+    silent=""
+    verbose=""
+    timestamp=""
+    originalTitle=""
+    originalArtist=""
+    originalAlbum=""
+    originalAlbumArtist=""
+    newTitle=""
+    newArtist=""
+    newAlbum=""
+    newAlbumArtist=""
+    apiResponsePath=""
+
     parseArguments "${@}"
     checkAuthTokens
     requestScrobbleData
@@ -186,16 +271,5 @@ main() {
     requestScrobbleEdit
     parseEditResponse
 }
-
-timestamp=""
-originalTitle=""
-originalArtist=""
-originalAlbum=""
-originalAlbumArtist=""
-newTitle=""
-newArtist=""
-newAlbum=""
-newAlbumArtist=""
-apiResponsePath=""
 
 main "${@}"
