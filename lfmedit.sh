@@ -20,6 +20,10 @@ logInfo() {
     echo "INF: ${FUNCNAME[1]}(): ${@}"
 }
 
+logWarning() {
+    echo -e "\e[33mWRN: ${FUNCNAME[1]}(): ${@}\e[0m"
+}
+
 logError() {
     echo -e "\e[31mERR: ${FUNCNAME[1]}(): ${@}\e[0m"
 }
@@ -117,11 +121,43 @@ urlEncode() {
     echo -n "${1}" | jq --slurp --raw-input --raw-output @uri
 }
 
+requestScrobbleEdit() {
+    # There's no way to get original album artist from last.fm API.
+    # In most cases this will be the same as track artist.
+    # TODO allow setting original album artist from command line.
+    if [ -z "${originalAlbumArtist}" ]; then
+        logWarning "assuming original album artist is ${originalArtist}"
+        local -r originalAlbumArtist="${originalArtist}"
+    fi
+
+    local -r url="https://www.last.fm/user/${username}/library/edit?edited-variation=recent-track"
+    local -r referer="Referer: https://www.last.fm/user/${username}"
+    local -r content="Content-Type: application/x-www-form-urlencoded; charset=UTF-8"
+    local -r cookies="Cookie: csrftoken=${LASTFM_CSRF}; sessionid=${LASTFM_SESSION_ID}"
+    local request=""
+
+    request+="csrfmiddlewaretoken=${LASTFM_CSRF}"
+    request+="&track_name=$(urlEncode "${newTitle}")"
+    request+="&artist_name=$(urlEncode "${newArtist}")"
+    request+="&album_name=$(urlEncode "${newAlbum}")"
+    request+="&album_artist_name=$(urlEncode "${newAlbumArtist}")"
+    request+="&timestamp=${timestamp}"
+    request+="&track_name_original=$(urlEncode "${originalTitle}")"
+    request+="&artist_name_original=$(urlEncode "${originalArtist}")"
+    request+="&album_name_original=$(urlEncode "${originalAlbum}")"
+    request+="&album_artist_name_original=$(urlEncode "${originalAlbumArtist}")"
+    request+="&submit=edit-scrobble"
+
+    logDebug "cookies = ${cookies}"
+    logDebug "request = ${request}"
+}
+
 main() {
     parseArguments "${@}"
     checkAuthTokens
     requestScrobbleData
     parseApiResponse
+    requestScrobbleEdit
 }
 
 username=""
@@ -130,6 +166,10 @@ originalTitle=""
 originalArtist=""
 originalAlbum=""
 originalAlbumArtist=""
+newTitle=""
+newArtist=""
+newAlbum=""
+newAlbumArtist=""
 apiResponsePath=""
 
 main "${@}"
