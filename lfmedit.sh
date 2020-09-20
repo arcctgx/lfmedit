@@ -104,10 +104,10 @@ parseApiResponse() {
         exit 4
     fi
 
-    oldTitle=$(jq -r '.recenttracks.track[-1].name' "${apiResponsePath}")
-    oldArtist=$(jq -r '.recenttracks.track[-1].artist["#text"]' "${apiResponsePath}")
-    oldAlbum=$(jq -r '.recenttracks.track[-1].album["#text"]' "${apiResponsePath}")
-    logDebug "title = ${oldTitle}, artist = ${oldArtist}, album = ${oldAlbum}"
+    originalTitle=$(jq -r '.recenttracks.track[-1].name' "${apiResponsePath}")
+    originalArtist=$(jq -r '.recenttracks.track[-1].artist["#text"]' "${apiResponsePath}")
+    originalAlbum=$(jq -r '.recenttracks.track[-1].album["#text"]' "${apiResponsePath}")
+    logDebug "title = ${originalTitle}, artist = ${originalArtist}, album = ${originalAlbum}"
 
     rm -f ${verbose} ${apiResponsePath}
     apiResponsePath=""
@@ -126,10 +126,10 @@ main() {
 
 username=""
 timestamp=""
-oldTitle=""
-oldArtist=""
-oldAlbum=""
-oldAlbumArtist=""
+originalTitle=""
+originalArtist=""
+originalAlbum=""
+originalAlbumArtist=""
 apiResponsePath=""
 
 main "${@}"
