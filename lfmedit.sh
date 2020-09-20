@@ -211,6 +211,16 @@ setNewScrobbleData() {
     logDebug "newTitle = ${newTitle}, newArtist = ${newArtist}, newAlbum = ${newAlbum}, newAlbumArtist = ${newAlbumArtist}"
 }
 
+detectCaseOnlyChange() {
+    local -r original="${originalTitle}${originalArtist}${originalAlbum}${originalAlbumArtist}"
+    local -r new="${newTitle}${newArtist}${newAlbum}${newAlbumArtist}"
+
+    if [ "${original,,}" == "${new,,}" ]; then
+        logError "Case-only changes cannot be applied!"
+        exit 5
+    fi
+}
+
 printEditData() {
     echo -e "\e[31m-${timestamp}\t${originalTitle}\t${originalArtist}\t${originalAlbum}\t${originalAlbumArtist}\e[0m"
     echo -e "\e[32m+${timestamp}\t${newTitle}\t${newArtist}\t${newAlbum}\t${newAlbumArtist}\e[0m"
@@ -218,6 +228,7 @@ printEditData() {
 
 requestScrobbleEdit() {
     setNewScrobbleData
+    detectCaseOnlyChange
 
     local -r url="https://www.last.fm/user/${LASTFM_USERNAME}/library/edit?edited-variation=recent-track"
     local -r referer="Referer: https://www.last.fm/user/${LASTFM_USERNAME}"
