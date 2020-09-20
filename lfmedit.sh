@@ -152,12 +152,19 @@ requestScrobbleEdit() {
     logDebug "request = ${request}"
 }
 
+parseEditResponse() {
+    # wrong CSRF token
+    # wrong session ID
+    logDebug
+}
+
 main() {
     parseArguments "${@}"
     checkAuthTokens
     requestScrobbleData
     parseApiResponse
     requestScrobbleEdit
+    parseEditResponse
 }
 
 username=""
