@@ -188,7 +188,15 @@ parseApiResponse() {
 }
 
 urlEncode() {
-    echo -n "${1}" | jq --slurp --raw-input --raw-output @uri
+    local LANG=C i c e=''
+
+    for (( i=0 ; i<${#1} ; i++ )); do
+        c=${1:$i:1}
+        [[ "$c" =~ [a-zA-Z0-9\.\~\_\-] ]] || printf -v c '%%%02X' "'$c"
+        e+="$c"
+    done
+
+    echo "$e"
 }
 
 setNewScrobbleData() {
