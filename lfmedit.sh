@@ -234,9 +234,24 @@ printEditData() {
     echo -e "\e[32m+${timestamp}\t${newTitle}\t${newArtist}\t${newAlbum}\t${newAlbumArtist}\e[0m"
 }
 
+requestConfirmation() {
+    read -p "Send this edit request? (uppercase Y to confirm, anything else to abort): " -n 1 -r
+
+    if [[ ! ${REPLY} =~ ^Y$ ]]; then
+        echo
+        logInfo "Aborted by user."
+        exit 0
+    fi
+
+    echo
+}
+
 requestScrobbleEdit() {
     setNewScrobbleData
     detectCaseOnlyChange
+
+    editResponsePath="$(mktemp -t lfmedit.html.XXXXXX)"
+    logDebug "editResponsePath = ${editResponsePath}"
 
     local -r url="https://www.last.fm/user/${LASTFM_USERNAME}/library/edit?edited-variation=recent-track"
     local -r referer="Referer: https://www.last.fm/user/${LASTFM_USERNAME}"
@@ -260,12 +275,22 @@ requestScrobbleEdit() {
     printEditData
 
     logDebug "request = ${request}"
+    requestConfirmation
+
+    curl ${silent} "${url}" \
+        -H "${referer}" \
+        -H "${content}" \
+        -H "${cookies}" \
+        --data-raw "${request}" \
+        -o "${editResponsePath}"
+
+    logDebug "edit request was sent"
 }
 
 parseEditResponse() {
     # wrong CSRF token
     # wrong session ID
-    logDebug
+    rm -f "${editResponsePath}"
 }
 
 main() {
@@ -282,6 +307,7 @@ main() {
     newAlbum=""
     newAlbumArtist=""
     apiResponsePath=""
+    editResponsePath=""
 
     parseArguments "${@}"
     checkAuthTokens
