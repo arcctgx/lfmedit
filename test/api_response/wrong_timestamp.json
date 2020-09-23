@@ -1,0 +1,46 @@
+{
+  "recenttracks": {
+    "@attr": {
+      "page": "1",
+      "total": "0",
+      "user": "FMrQKqyU",
+      "perPage": "1",
+      "totalPages": "0"
+    },
+    "track": {
+      "artist": {
+        "mbid": "dcb2955e-ff59-4ff2-a608-cbb90ee3ac38",
+        "#text": "Meat Beat Manifesto"
+      },
+      "@attr": {
+        "nowplaying": "true"
+      },
+      "mbid": "1895f994-68a7-3ba7-afca-fceb995c2a38",
+      "album": {
+        "mbid": "",
+        "#text": "Subliminal Sandwich"
+      },
+      "streamable": "0",
+      "url": "https://www.last.fm/music/Meat+Beat+Manifesto/_/Mass+Producing+Hate",
+      "name": "Mass Producing Hate",
+      "image": [
+        {
+          "size": "small",
+          "#text": "https://lastfm.freetls.fastly.net/i/u/34s/eebbfbae3d5d4ff987227cde1055face.png"
+        },
+        {
+          "size": "medium",
+          "#text": "https://lastfm.freetls.fastly.net/i/u/64s/eebbfbae3d5d4ff987227cde1055face.png"
+        },
+        {
+          "size": "large",
+          "#text": "https://lastfm.freetls.fastly.net/i/u/174s/eebbfbae3d5d4ff987227cde1055face.png"
+        },
+        {
+          "size": "extralarge",
+          "#text": "https://lastfm.freetls.fastly.net/i/u/300x300/eebbfbae3d5d4ff987227cde1055face.png"
+        }
+      ]
+    }
+  }
+}
