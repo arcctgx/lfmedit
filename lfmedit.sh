@@ -98,11 +98,16 @@ parseArguments() {
 }
 
 checkAuthTokens() {
-    if [ -z "${LASTFM_USERNAME}" ]; then
-        logError "last.fm username not provided, exiting!"
-        exit 1
-    elif [ -z ${LASTFM_API_KEY} ]; then
+    if [ -f auth_tokens ]; then
+        logDebug "reading auth_tokens file"
+        . auth_tokens
+    fi
+
+    if [ -z ${LASTFM_API_KEY} ]; then
         logError "last.fm API key is not provided, exiting!"
+        exit 1
+    elif [ -z "${LASTFM_USERNAME}" ]; then
+        logError "last.fm username not provided, exiting!"
         exit 1
     elif [ -z "${LASTFM_CSRF}" ]; then
         logError "last.fm CSRF token is not provided, exiting!"

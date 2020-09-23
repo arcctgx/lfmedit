@@ -1,0 +1,6 @@
+# lfmedit API key
+export LASTFM_API_KEY="29a5d6e1ddfce0e472ce9a328ac21ff5"
+
+export LASTFM_USERNAME=""
+export LASTFM_CSRF=""
+export LASTFM_SESSION_ID=""

@@ -1,5 +1,1 @@
-tokens
-
-*.txt
-*.json
-*.diff
+auth_tokens
