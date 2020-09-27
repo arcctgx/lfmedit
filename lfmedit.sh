@@ -40,12 +40,12 @@ usage() {
 }
 
 checkMandatoryParameters() {
-    if [ -z "${timestamp}" ]; then
+    if [ ! -v timestamp ] || [ -z "${timestamp}" ]; then
         logError "Unix timestamp (-u) must be provided!"
         return 1
     fi
 
-    if [ -z "${newTitle}" -a -z "${newArtist}" -a -z "${newAlbum}" -a -z "${newAlbumArtist}" ]; then
+    if [ ! -v newTitle ] && [ ! -v newArtist ] && [ ! -v newAlbum ] && [ ! -v newAlbumArtist ] ; then
         logError "At least one of -t/-a/-b/-z parameters must be provided!"
         return 1
     fi
@@ -54,6 +54,8 @@ checkMandatoryParameters() {
 }
 
 parseArguments() {
+    debugLevel=0
+
     while getopts ":u:t:a:b:z:Z:d" options; do
         case "${options}" in
             u)
@@ -182,14 +184,20 @@ parseApiResponse() {
 
     # There's no way to get original album artist from last.fm API.
     # In most cases this will be the same as track artist.
-    if [ -z "${originalAlbumArtist}" ]; then
-        logWarning "assuming original album artist is the same as original track artist (use -Z to override)"
+    if [ ! -v originalAlbumArtist ]; then
+        logDebug "assuming original album artist is the same as original track artist"
         originalAlbumArtist="${originalArtist}"
     fi
+
+    # If there's no original album, then original album artist must be blank too.
+    if [ -z "${originalAlbum}" ]; then
+        logDebug "no original album set for scrobble, assuming empty original album artist."
+        originalAlbumArtist=""
+    fi
+
     logDebug "originalAlbumArtist = ${originalAlbumArtist}"
 
     rm -f ${verbose} ${apiResponsePath}
-    apiResponsePath=""
 }
 
 urlEncode() {
@@ -205,31 +213,53 @@ urlEncode() {
 }
 
 setNewScrobbleData() {
-    if [ -z "${newTitle}" ]; then
+    if [ ! -v newTitle ]; then
         newTitle="${originalTitle}"
     fi
 
-    if [ -z "${newArtist}" ]; then
+    if [ ! -v newArtist ]; then
         newArtist="${originalArtist}"
     fi
 
-    if [ -z "${newAlbum}" ]; then
+    if [ ! -v newAlbum ]; then
         newAlbum="${originalAlbum}"
     fi
 
-    if [ -z "${newAlbumArtist}" ]; then
-        newAlbumArtist="${originalAlbumArtist}"
+    # TODO move new album artist logic to a separate function
+    if [ ! -v newAlbumArtist ]; then
+        if [ "${newArtist}" != "${originalArtist}" ]; then
+            logDebug "new album artist not set when changing artist, assuming same as new artist."
+            newAlbumArtist="${newArtist}"
+        else
+            logDebug "new album artist not set, using original album artist."
+            newAlbumArtist="${originalAlbumArtist}"
+        fi
+    fi
+
+    if [ -z "${newAlbum}" ]; then
+        logDebug "new album is blank, blanking new album artist to match."
+        newAlbumArtist=""
+    fi
+
+    if [ -z "${originalAlbum}" ] && [ -n "${newAlbum}" ] && [ -z "${newAlbumArtist}" ] ; then
+        logDebug "assuming new album artist is the same as original artist when adding album information."
+        newAlbumArtist="${originalArtist}"
     fi
 
     logDebug "newTitle = ${newTitle}, newArtist = ${newArtist}, newAlbum = ${newAlbum}, newAlbumArtist = ${newAlbumArtist}"
 }
 
-detectCaseOnlyChange() {
+detectInvalidChange() {
     local -r original="${originalTitle}${originalArtist}${originalAlbum}${originalAlbumArtist}"
     local -r new="${newTitle}${newArtist}${newAlbum}${newAlbumArtist}"
 
     if [ "${original,,}" == "${new,,}" ]; then
         logError "Case-only changes cannot be applied!"
+        exit 5
+    fi
+
+    if [ -z "${newTitle}" ] || [ -z "${newArtist}" ] ; then
+        logError "can't erase title or artist!"
         exit 5
     fi
 }
@@ -253,7 +283,7 @@ requestConfirmation() {
 
 requestScrobbleEdit() {
     setNewScrobbleData
-    detectCaseOnlyChange
+    detectInvalidChange
 
     editResponsePath="$(mktemp -t lfmedit.html.XXXXXX)"
     logDebug "editResponsePath = ${editResponsePath}"
@@ -299,21 +329,6 @@ parseEditResponse() {
 }
 
 main() {
-    debugLevel=0
-    silent=""
-    verbose=""
-    timestamp=""
-    originalTitle=""
-    originalArtist=""
-    originalAlbum=""
-    originalAlbumArtist=""
-    newTitle=""
-    newArtist=""
-    newAlbum=""
-    newAlbumArtist=""
-    apiResponsePath=""
-    editResponsePath=""
-
     parseArguments "${@}"
     checkAuthTokens
     requestScrobbleData
