@@ -2,24 +2,24 @@
 
 logDebug() {
     if [ "${debugLevel}" -ge 1 ]; then
-        echo -e "\e[90mDBG: ${FUNCNAME[1]}(): ${@}\e[0m"
+        echo -e "\e[90mDBG: ${FUNCNAME[1]}(): ${*}\e[0m"
     fi
 }
 
 logInfo() {
-    echo "INF: ${FUNCNAME[1]}(): ${@}"
+    echo "INF: ${FUNCNAME[1]}(): ${*}"
 }
 
 logWarning() {
-    echo -e "\e[33mWRN: ${FUNCNAME[1]}(): ${@}\e[0m"
+    echo -e "\e[33mWRN: ${FUNCNAME[1]}(): ${*}\e[0m"
 }
 
 logError() {
-    echo -e "\e[31mERR: ${FUNCNAME[1]}(): ${@}\e[0m"
+    echo -e "\e[31mERR: ${FUNCNAME[1]}(): ${*}\e[0m"
 }
 
 usage() {
-    echo "usage: $(basename $0) <parameters>"
+    echo "usage: $(basename "$0") <parameters>"
     echo
     echo "List of parameters:"
     echo
@@ -79,6 +79,9 @@ parseArguments() {
             d)
                 ((debugLevel++))
                 ;;
+            *)
+                # quietly ignore unsupported options
+                ;;
         esac
     done
 
@@ -90,7 +93,7 @@ parseArguments() {
         silent="--silent"
     fi
 
-    logDebug "args = ${@}"
+    logDebug "args = ${*}"
 
     if ! checkMandatoryParameters; then
         logError "Missing mandatory parameters!"
@@ -105,7 +108,7 @@ checkAuthTokens() {
         . auth_tokens
     fi
 
-    if [ -z ${LASTFM_API_KEY} ]; then
+    if [ -z "${LASTFM_API_KEY}" ]; then
         logError "last.fm API key is not provided, exiting!"
         exit 1
     elif [ -z "${LASTFM_USERNAME}" ]; then
@@ -138,7 +141,7 @@ requestScrobbleData() {
 
     if [ ${curlStatus} -ne 0 ]; then
         logError "last.fm API request failed! curl error = ${curlStatus}"
-        rm -f ${verbose} "${apiResponsePath}"
+        rm -f "${verbose}" "${apiResponsePath}"
         exit 2
     fi
 
@@ -163,7 +166,7 @@ parseApiResponse() {
     logDebug "total = ${total}"
     if [ "${total}" -ne 1 ]; then
         logError "unexpected number of scrobbles in API response! (got ${total} instead of 1)"
-        rm -f ${verbose} "${apiResponsePath}"
+        rm -f "${verbose}" "${apiResponsePath}"
         exit 4
     fi
 
@@ -173,7 +176,7 @@ parseApiResponse() {
         logDebug "got scrobble with matching timestamp: uts = $uts"
     else
         logError "scrobble timestamp mismatch! (expected: ${timestamp}, received: ${uts})"
-        rm -f ${verbose} "${apiResponsePath}"
+        rm -f "${verbose}" "${apiResponsePath}"
         exit 4
     fi
 
@@ -197,7 +200,7 @@ parseApiResponse() {
 
     logDebug "originalAlbumArtist = ${originalAlbumArtist}"
 
-    rm -f ${verbose} ${apiResponsePath}
+    rm -f "${verbose}" "${apiResponsePath}"
 }
 
 urlEncode() {
@@ -325,7 +328,7 @@ requestScrobbleEdit() {
 parseEditResponse() {
     # wrong CSRF token
     # wrong session ID
-    rm -f "${editResponsePath}"
+    rm -f "${verbose}" "${editResponsePath}"
 }
 
 main() {
