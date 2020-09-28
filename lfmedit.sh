@@ -125,7 +125,12 @@ checkAuthTokens() {
     logInfo "all necessary authentication tokens are set"
 }
 
-requestScrobbleData() {
+handleApiErrors() {
+    # TODO parse response to detect API errors
+    false
+}
+
+requestOriginalScrobbleData() {
     apiResponsePath="$(mktemp -t lfmquery.json.XXXXXX)"
     logDebug "apiResponsePath = ${apiResponsePath}"
 
@@ -145,19 +150,14 @@ requestScrobbleData() {
         exit 2
     fi
 
+    handleApiErrors
+
     if [ "${debugLevel}" -ge 2 ]; then
         jq --monochrome-output . "${apiResponsePath}"
     fi
 }
 
-handleApiErrors() {
-    # TODO actually parse response in search of API errors
-    logDebug "last.fm API call was successful"
-}
-
-parseApiResponse() {
-    handleApiErrors
-
+extractOriginalScrobbleData() {
     # We expect that there are at most two tracks in the response:
     # "now playing" (optional), and the one we want (always last).
     # The attribute "total" holds the number of returned scrobbles,
@@ -284,12 +284,14 @@ requestConfirmation() {
     echo
 }
 
-requestScrobbleEdit() {
-    setNewScrobbleData
-    detectInvalidChange
+handleEditErrors() {
+    # wrong CSRF token
+    # wrong session ID
+    rm -f "${verbose}" "${editResponsePath}"
+}
 
-    editResponsePath="$(mktemp -t lfmedit.html.XXXXXX)"
-    logDebug "editResponsePath = ${editResponsePath}"
+requestScrobbleEdit() {
+    detectInvalidChange
 
     local -r url="https://www.last.fm/user/${LASTFM_USERNAME}/library/edit?edited-variation=recent-track"
     local -r referer="Referer: https://www.last.fm/user/${LASTFM_USERNAME}"
@@ -315,6 +317,9 @@ requestScrobbleEdit() {
     logDebug "request = ${request}"
     requestConfirmation
 
+    editResponsePath="$(mktemp -t lfmedit.html.XXXXXX)"
+    logDebug "editResponsePath = ${editResponsePath}"
+
     curl ${silent} "${url}" \
         -H "${referer}" \
         -H "${content}" \
@@ -323,21 +328,17 @@ requestScrobbleEdit() {
         -o "${editResponsePath}"
 
     logDebug "edit request was sent"
-}
 
-parseEditResponse() {
-    # wrong CSRF token
-    # wrong session ID
-    rm -f "${verbose}" "${editResponsePath}"
+    handleEditErrors
 }
 
 main() {
     parseArguments "${@}"
     checkAuthTokens
-    requestScrobbleData
-    parseApiResponse
+    requestOriginalScrobbleData
+    extractOriginalScrobbleData
+    setNewScrobbleData
     requestScrobbleEdit
-    parseEditResponse
 }
 
 main "${@}"
