@@ -1,6 +1,4 @@
-# lfmedit API key
-export LASTFM_API_KEY="29a5d6e1ddfce0e472ce9a328ac21ff5"
-
+# set your last.fm access tokens here:
 export LASTFM_USERNAME=""
-export LASTFM_CSRF=""
 export LASTFM_SESSION_ID=""
+export LASTFM_CSRF=""

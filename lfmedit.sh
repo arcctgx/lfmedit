@@ -108,17 +108,14 @@ checkAuthTokens() {
         . auth_tokens
     fi
 
-    if [ -z "${LASTFM_API_KEY}" ]; then
-        logError "last.fm API key is not provided, exiting!"
-        exit 1
-    elif [ -z "${LASTFM_USERNAME}" ]; then
+    if [ -z "${LASTFM_USERNAME}" ]; then
         logError "last.fm username not provided, exiting!"
-        exit 1
-    elif [ -z "${LASTFM_CSRF}" ]; then
-        logError "last.fm CSRF token is not provided, exiting!"
         exit 1
     elif [ -z "${LASTFM_SESSION_ID}" ]; then
         logError "last.fm session ID is not provided, exiting!"
+        exit 1
+    elif [ -z "${LASTFM_CSRF}" ]; then
+        logError "last.fm CSRF token is not provided, exiting!"
         exit 1
     fi
 
@@ -135,17 +132,24 @@ requestOriginalScrobbleData() {
     logDebug "apiResponsePath = ${apiResponsePath}"
 
     local -r apiRoot="http://ws.audioscrobbler.com/2.0/"
+    local -r apiKey="29a5d6e1ddfce0e472ce9a328ac21ff5"
     local -r timeFrom="${timestamp}"
     local -r timeTo=$((timeFrom+1))     # a hack to limit results to a single scrobble
     local -r perPage=1                  # request one scrobble per page...
     local -r page=1                     # ...and only the first page of results.
+    local url=""
 
     logDebug "username = ${LASTFM_USERNAME}, timeFrom = ${timeFrom}, timeTo = ${timeTo}"
-    curl ${silent} -o "${apiResponsePath}" "${apiRoot}?method=user.getrecenttracks&api_key=${LASTFM_API_KEY}&user=${LASTFM_USERNAME}&format=json&from=${timeFrom}&to=${timeTo}&limit=${perPage}&page=${page}"
+
+    url+="${apiRoot}?method=user.getrecenttracks&api_key=${apiKey}"
+    url+="&user=${LASTFM_USERNAME}"
+    url+="&from=${timeFrom}&to=${timeTo}&limit=${perPage}&page=${page}&format=json"
+
+    curl ${silent} -o "${apiResponsePath}" "${url}"
     local -r curlStatus="${?}"
 
     if [ ${curlStatus} -ne 0 ]; then
-        logError "last.fm API request failed! curl error = ${curlStatus}"
+        logError "failed to send last.fm API request! curl error = ${curlStatus}"
         rm -f "${verbose}" "${apiResponsePath}"
         exit 2
     fi
