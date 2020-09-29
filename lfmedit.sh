@@ -123,8 +123,17 @@ checkAuthTokens() {
 }
 
 handleApiErrors() {
-    # TODO parse response to detect API errors
-    false
+    if [[ ${debugLevel} -ge 2 ]]; then
+        jq --monochrome-output . "${apiResponsePath}"
+    fi
+
+    if [[ $(jq 'has("error")' "${apiResponsePath}") == "true" ]]; then
+        local -r errcode=$(jq '.error' "${apiResponsePath}")
+        local -r message=$(jq -r '.message' "${apiResponsePath}")
+        logError "error ${errcode}: ${message}"
+        rm -f "${verbose}" "${apiResponsePath}"
+        exit 3
+    fi
 }
 
 requestOriginalScrobbleData() {
@@ -148,17 +157,13 @@ requestOriginalScrobbleData() {
     curl ${silent} -o "${apiResponsePath}" "${url}"
     local -r curlStatus="${?}"
 
-    if [ ${curlStatus} -ne 0 ]; then
+    if [[ ${curlStatus} -ne 0 ]]; then
         logError "failed to send last.fm API request! curl error = ${curlStatus}"
         rm -f "${verbose}" "${apiResponsePath}"
         exit 2
     fi
 
     handleApiErrors
-
-    if [ "${debugLevel}" -ge 2 ]; then
-        jq --monochrome-output . "${apiResponsePath}"
-    fi
 }
 
 extractOriginalScrobbleData() {
