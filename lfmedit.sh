@@ -7,7 +7,7 @@ logDebug() {
 }
 
 logInfo() {
-    echo "INF: ${FUNCNAME[1]}(): ${*}"
+    echo -e "INF: ${FUNCNAME[1]}(): ${*}"
 }
 
 logWarning() {
@@ -154,11 +154,19 @@ requestOriginalScrobbleData() {
     url+="&user=${LASTFM_USERNAME}"
     url+="&from=${timeFrom}&to=${timeTo}&limit=${perPage}&page=${page}&format=json"
 
-    curl ${silent} -o "${apiResponsePath}" "${url}"
+    local -r httpCode=$(curl ${silent} -o "${apiResponsePath}" -w "%{http_code}\n" "${url}")
     local -r curlStatus="${?}"
 
     if [[ ${curlStatus} -ne 0 ]]; then
         logError "failed to send last.fm API request! curl error = ${curlStatus}"
+        rm -f "${verbose}" "${apiResponsePath}"
+        exit 2
+    fi
+
+    logDebug "API request was sent"
+
+    if [[ ${httpCode} -ne 200 ]]; then
+        logError "received HTTP error ${httpCode} while sending API request!"
         rm -f "${verbose}" "${apiResponsePath}"
         exit 2
     fi
@@ -293,12 +301,6 @@ requestConfirmation() {
     echo
 }
 
-handleEditErrors() {
-    # wrong CSRF token
-    # wrong session ID
-    rm -f "${verbose}" "${editResponsePath}"
-}
-
 requestScrobbleEdit() {
     detectInvalidChange
 
@@ -326,19 +328,90 @@ requestScrobbleEdit() {
     logDebug "request = ${request}"
     requestConfirmation
 
-    editResponsePath="$(mktemp -t lfmedit.html.XXXXXX)"
-    logDebug "editResponsePath = ${editResponsePath}"
-
-    curl ${silent} "${url}" \
+    local -r httpCode=$(curl ${silent} -o /dev/null -w "%{http_code}\n" "${url}" \
         -H "${referer}" \
         -H "${content}" \
         -H "${cookies}" \
-        --data-raw "${request}" \
-        -o "${editResponsePath}"
+        --data-raw "${request}")
+    local -r curlStatus="${?}"
+
+    if [[ ${curlStatus} -ne 0 ]]; then
+        logError "failed to send last.fm edit request! curl error = ${curlStatus}"
+        exit 6
+    fi
 
     logDebug "edit request was sent"
 
-    handleEditErrors
+    if [[ ${httpCode} -ne 200 ]]; then
+        case "${httpCode}" in
+            403)
+                logError "HTTP error ${httpCode}: check last.fm CSRF token"
+                ;;
+            404)
+                logError "HTTP error ${httpCode}: check last.fm session ID"
+                ;;
+            500)
+                logError "HTTP error ${httpCode}: check edit parameters (wrong original album artist?)"
+                ;;
+            *)
+                logError "HTTP error ${httpCode}"
+                ;;
+        esac
+
+        exit 6
+    fi
+}
+
+verifyScrobbleEdit() {
+    # Method: send a "pre-edit" POST request with parameters containing new
+    # scrobble data (expected to be set on last.fm side after successful edit).
+    # In case of unsuccessful edit last.fm will still have original data, and the
+    # request will fail with HTTP error 500. Otherwise the request will be successful,
+    # and it will contain new scrobble data in its body. For now I'm assuming I can
+    # rely on the HTTP status codes, and don't parse the response.
+
+    local -r url="https://www.last.fm/user/${LASTFM_USERNAME}/library/edit?edited-variation=recent-track"
+    local -r referer="Referer: https://www.last.fm/user/${LASTFM_USERNAME}"
+    local -r content="Content-Type: application/x-www-form-urlencoded; charset=UTF-8"
+    local -r cookies="Cookie: csrftoken=${LASTFM_CSRF}; sessionid=${LASTFM_SESSION_ID}"
+    local request=""
+
+    request+="csrfmiddlewaretoken=${LASTFM_CSRF}"
+    request+="&artist_name=$(urlEncode "${newArtist}")"
+    request+="&track_name=$(urlEncode "${newTitle}")"
+    request+="&album_name=$(urlEncode "${newAlbum}")"
+    request+="&album_artist_name=$(urlEncode "${newAlbumArtist}")"
+    request+="&timestamp=${timestamp}"
+
+    logDebug "request = ${request}"
+
+    local -r httpCode=$(curl ${silent} -o /dev/null -w "%{http_code}\n" "${url}" \
+        -H "${referer}" \
+        -H "${content}" \
+        -H "${cookies}" \
+        --data-raw "${request}")
+    local -r curlStatus="${?}"
+
+    if [[ ${curlStatus} -ne 0 ]]; then
+        logError "failed to send last.fm verification request! curl error = ${curlStatus}"
+        exit 7
+    fi
+
+    logDebug "verification request was sent"
+
+    case "${httpCode}" in
+        200)
+            logInfo "\e[1m\e[32mverification passed!\e[0m Scrobble edited successfully"
+            ;;
+        500)
+            logError "HTTP error ${httpCode}: last.fm still has old scrobble data, edit failed!"
+            exit 7
+            ;;
+        *)
+            logError "HTTP error ${httpCode}: something else went wrong, not sure about edit status"
+            exit 7
+            ;;
+    esac
 }
 
 main() {
@@ -348,6 +421,7 @@ main() {
     extractOriginalScrobbleData
     setNewScrobbleData
     requestScrobbleEdit
+    verifyScrobbleEdit
 }
 
 main "${@}"
