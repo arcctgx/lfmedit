@@ -53,7 +53,7 @@ urlEncode() {
 }
 
 requestConfirmation() {
-    read -p "Proceed? (uppercase Y to confirm, anything else to abort): " -n 1 -r
+    read -u 1 -p "Proceed? (uppercase Y to confirm, anything else to abort): " -n 1 -r
 
     if [[ ! ${REPLY} =~ ^Y$ ]]; then
         echo
