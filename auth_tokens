@@ -1,4 +1,0 @@
-# set your last.fm access tokens here:
-export LASTFM_USERNAME=""
-export LASTFM_SESSION_ID=""
-export LASTFM_CSRF=""

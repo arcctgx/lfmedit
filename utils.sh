@@ -21,18 +21,18 @@ logError() {
 }
 
 checkAuthTokens() {
-    if [ -f auth_tokens ]; then
-        logDebug "reading auth_tokens file"
-        . auth_tokens
+    if [ -f auth_tokens.sh ]; then
+        logDebug "reading auth_tokens.sh file"
+        source auth_tokens.sh
     fi
 
-    if [ -z "${LASTFM_USERNAME}" ]; then
+    if [ -z "${lastfm_username}" ]; then
         logError "last.fm username not provided, exiting!"
         exit 1
-    elif [ -z "${LASTFM_SESSION_ID}" ]; then
+    elif [ -z "${lastfm_session_id}" ]; then
         logError "last.fm session ID is not provided, exiting!"
         exit 1
-    elif [ -z "${LASTFM_CSRF}" ]; then
+    elif [ -z "${lastfm_csrf}" ]; then
         logError "last.fm CSRF token is not provided, exiting!"
         exit 1
     fi

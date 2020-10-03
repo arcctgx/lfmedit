@@ -31,10 +31,10 @@ requestOriginalScrobbleData() {
     local -r page=1                     # ...and only the first page of results.
     local url=""
 
-    logDebug "username = ${LASTFM_USERNAME}, timeFrom = ${timeFrom}, timeTo = ${timeTo}"
+    logDebug "username = ${lastfm_username}, timeFrom = ${timeFrom}, timeTo = ${timeTo}"
 
     url+="${apiRoot}?method=user.getrecenttracks&api_key=${apiKey}"
-    url+="&user=${LASTFM_USERNAME}"
+    url+="&user=${lastfm_username}"
     url+="&from=${timeFrom}&to=${timeTo}&limit=${perPage}&page=${page}&format=json"
 
     local -r httpCode=$(curl ${silent} -o "${apiResponsePath}" -w "%{http_code}\n" "${url}")
@@ -163,13 +163,13 @@ printEditData() {
 requestScrobbleEdit() {
     detectInvalidChange
 
-    local -r url="https://www.last.fm/user/${LASTFM_USERNAME}/library/edit?edited-variation=recent-track"
-    local -r referer="Referer: https://www.last.fm/user/${LASTFM_USERNAME}"
+    local -r url="https://www.last.fm/user/${lastfm_username}/library/edit?edited-variation=recent-track"
+    local -r referer="Referer: https://www.last.fm/user/${lastfm_username}"
     local -r content="Content-Type: application/x-www-form-urlencoded; charset=UTF-8"
-    local -r cookies="Cookie: csrftoken=${LASTFM_CSRF}; sessionid=${LASTFM_SESSION_ID}"
+    local -r cookies="Cookie: csrftoken=${lastfm_csrf}; sessionid=${lastfm_session_id}"
     local request=""
 
-    request+="csrfmiddlewaretoken=${LASTFM_CSRF}"
+    request+="csrfmiddlewaretoken=${lastfm_csrf}"
     request+="&track_name=$(urlEncode "${newTitle}")"
     request+="&artist_name=$(urlEncode "${newArtist}")"
     request+="&album_name=$(urlEncode "${newAlbum}")"
@@ -229,13 +229,13 @@ verifyScrobbleEdit() {
     # and it will contain new scrobble data in its body. For now I'm assuming I can
     # rely on the HTTP status codes, and don't parse the response.
 
-    local -r url="https://www.last.fm/user/${LASTFM_USERNAME}/library/edit?edited-variation=recent-track"
-    local -r referer="Referer: https://www.last.fm/user/${LASTFM_USERNAME}"
+    local -r url="https://www.last.fm/user/${lastfm_username}/library/edit?edited-variation=recent-track"
+    local -r referer="Referer: https://www.last.fm/user/${lastfm_username}"
     local -r content="Content-Type: application/x-www-form-urlencoded; charset=UTF-8"
-    local -r cookies="Cookie: csrftoken=${LASTFM_CSRF}; sessionid=${LASTFM_SESSION_ID}"
+    local -r cookies="Cookie: csrftoken=${lastfm_csrf}; sessionid=${lastfm_session_id}"
     local request=""
 
-    request+="csrfmiddlewaretoken=${LASTFM_CSRF}"
+    request+="csrfmiddlewaretoken=${lastfm_csrf}"
     request+="&artist_name=$(urlEncode "${newArtist}")"
     request+="&track_name=$(urlEncode "${newTitle}")"
     request+="&album_name=$(urlEncode "${newAlbum}")"
