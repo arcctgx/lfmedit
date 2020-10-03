@@ -103,20 +103,7 @@ extractOriginalScrobbleData() {
     rm -f "${verbose}" "${apiResponsePath}"
 }
 
-setNewScrobbleData() {
-    if [ ! -v newTitle ]; then
-        newTitle="${originalTitle}"
-    fi
-
-    if [ ! -v newArtist ]; then
-        newArtist="${originalArtist}"
-    fi
-
-    if [ ! -v newAlbum ]; then
-        newAlbum="${originalAlbum}"
-    fi
-
-    # TODO move new album artist logic to a separate function
+setNewAlbumArtist() {
     if [ ! -v newAlbumArtist ]; then
         if [ "${newArtist}" != "${originalArtist}" ]; then
             logDebug "new album artist not set when changing artist, assuming same as new artist."
@@ -136,6 +123,22 @@ setNewScrobbleData() {
         logDebug "assuming new album artist is the same as original artist when adding album information."
         newAlbumArtist="${originalArtist}"
     fi
+}
+
+setNewScrobbleData() {
+    if [ ! -v newTitle ]; then
+        newTitle="${originalTitle}"
+    fi
+
+    if [ ! -v newArtist ]; then
+        newArtist="${originalArtist}"
+    fi
+
+    if [ ! -v newAlbum ]; then
+        newAlbum="${originalAlbum}"
+    fi
+
+    setNewAlbumArtist
 
     logDebug "newTitle = ${newTitle}, newArtist = ${newArtist}, newAlbum = ${newAlbum}, newAlbumArtist = ${newAlbumArtist}"
 }
