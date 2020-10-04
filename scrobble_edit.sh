@@ -173,6 +173,10 @@ printEditData() {
 
 requestScrobbleEdit() {
     setNewScrobbleData
+
+    logInfo "This is the edit that will be applied:"
+    printEditData
+
     detectInvalidChange || return 1
 
     local -r url="https://www.last.fm/user/${lastfm_username}/library/edit?edited-variation=recent-track"
@@ -194,9 +198,6 @@ requestScrobbleEdit() {
     request+="&album_name_original=$(urlEncode "${originalAlbum}")"
     request+="&album_artist_name_original=$(urlEncode "${originalAlbumArtist}")"
     request+="&submit=edit-scrobble"
-
-    logInfo "This is the edit that will be applied:"
-    printEditData
 
     logDebug "request = ${request}"
     requestConfirmation || return 2
