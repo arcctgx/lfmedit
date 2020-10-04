@@ -13,7 +13,7 @@ handleApiErrors() {
     if [[ $(jq 'has("error")' "${apiResponsePath}") == "true" ]]; then
         local -r errcode=$(jq '.error' "${apiResponsePath}")
         local -r message=$(jq -r '.message' "${apiResponsePath}")
-        logError "error ${errcode}: ${message}"
+        logError "last.fm error ${errcode}: ${message}"
         rm -f "${verbose}" "${apiResponsePath}"
         exit 3
     fi
@@ -48,7 +48,7 @@ requestOriginalScrobbleData() {
         exit 2
     fi
 
-    logDebug "API request was sent"
+    logDebug "last.fm API request was sent, httpCode = ${httpCode}"
 
     if [[ ${httpCode} -ne 200 ]]; then
         logError "received HTTP error ${httpCode} while sending API request!"
@@ -206,7 +206,7 @@ requestScrobbleEdit() {
         exit 6
     fi
 
-    logDebug "edit request was sent"
+    logDebug "last.fm edit request was sent, httpCode = ${httpCode}"
 
     if [[ ${httpCode} -ne 200 ]]; then
         case "${httpCode}" in
@@ -265,7 +265,7 @@ verifyScrobbleEdit() {
         exit 7
     fi
 
-    logDebug "verification request was sent"
+    logDebug "last.fm verification request was sent, httpCode = ${httpCode}"
 
     case "${httpCode}" in
         200)

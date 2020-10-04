@@ -57,8 +57,8 @@ requestConfirmation() {
 
     if [[ ! ${REPLY} =~ ^Y$ ]]; then
         echo
-        logInfo "Aborted by user."
         exit 0
+        logInfo "Not applying this edit."
     fi
 
     echo
