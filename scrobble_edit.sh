@@ -29,6 +29,8 @@ requestOriginalScrobbleData() {
     local -r timeTo=$((timeFrom+1))     # a hack to limit results to a single scrobble
     local -r perPage=1                  # request one scrobble per page...
     local -r page=1                     # ...and only the first page of results.
+    local httpCode=""
+    local curlStatus=""
     local url=""
 
     logDebug "username = ${lastfm_username}, timeFrom = ${timeFrom}, timeTo = ${timeTo}"
@@ -37,8 +39,8 @@ requestOriginalScrobbleData() {
     url+="&user=${lastfm_username}"
     url+="&from=${timeFrom}&to=${timeTo}&limit=${perPage}&page=${page}&format=json"
 
-    local -r httpCode=$(curl ${silent} -o "${apiResponsePath}" -w "%{http_code}\n" "${url}")
-    local -r curlStatus="${?}"
+    httpCode=$(curl ${silent} -o "${apiResponsePath}" -w "%{http_code}\n" "${url}")
+    curlStatus=${?}
 
     if [[ ${curlStatus} -ne 0 ]]; then
         logError "failed to send last.fm API request! curl error = ${curlStatus}"
@@ -170,6 +172,8 @@ requestScrobbleEdit() {
     local -r referer="Referer: https://www.last.fm/user/${lastfm_username}"
     local -r content="Content-Type: application/x-www-form-urlencoded; charset=UTF-8"
     local -r cookies="Cookie: csrftoken=${lastfm_csrf}; sessionid=${lastfm_session_id}"
+    local httpCode=""
+    local curlStatus=""
     local request=""
 
     request+="csrfmiddlewaretoken=${lastfm_csrf}"
@@ -190,12 +194,12 @@ requestScrobbleEdit() {
     logDebug "request = ${request}"
     requestConfirmation
 
-    local -r httpCode=$(curl ${silent} -o /dev/null -w "%{http_code}\n" "${url}" \
+    httpCode=$(curl ${silent} -o /dev/null -w "%{http_code}\n" "${url}" \
         -H "${referer}" \
         -H "${content}" \
         -H "${cookies}" \
         --data-raw "${request}")
-    local -r curlStatus="${?}"
+    curlStatus="${?}"
 
     if [[ ${curlStatus} -ne 0 ]]; then
         logError "failed to send last.fm edit request! curl error = ${curlStatus}"
@@ -236,6 +240,8 @@ verifyScrobbleEdit() {
     local -r referer="Referer: https://www.last.fm/user/${lastfm_username}"
     local -r content="Content-Type: application/x-www-form-urlencoded; charset=UTF-8"
     local -r cookies="Cookie: csrftoken=${lastfm_csrf}; sessionid=${lastfm_session_id}"
+    local httpCode=""
+    local curlStatus=""
     local request=""
 
     request+="csrfmiddlewaretoken=${lastfm_csrf}"
@@ -247,12 +253,12 @@ verifyScrobbleEdit() {
 
     logDebug "request = ${request}"
 
-    local -r httpCode=$(curl ${silent} -o /dev/null -w "%{http_code}\n" "${url}" \
+    httpCode=$(curl ${silent} -o /dev/null -w "%{http_code}\n" "${url}" \
         -H "${referer}" \
         -H "${content}" \
         -H "${cookies}" \
         --data-raw "${request}")
-    local -r curlStatus="${?}"
+    curlStatus="${?}"
 
     if [[ ${curlStatus} -ne 0 ]]; then
         logError "failed to send last.fm verification request! curl error = ${curlStatus}"
