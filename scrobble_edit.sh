@@ -155,14 +155,19 @@ detectInvalidChange() {
     local -r original="${originalTitle}${originalArtist}${originalAlbum}${originalAlbumArtist}"
     local -r new="${newTitle}${newArtist}${newAlbum}${newAlbumArtist}"
 
-    if [ "${original,,}" == "${new,,}" ]; then
-        logError "Case-only changes cannot be applied!"
+    if [[ ${original} == ${new} ]]; then
+        logError "Edit does not change anything!"
         return 1
     fi
 
-    if [ -z "${newTitle}" ] || [ -z "${newArtist}" ] ; then
-        logError "can't erase title or artist!"
+    if [[ ${original,,} == ${new,,} ]]; then
+        logError "Case-only changes cannot be applied!"
         return 2
+    fi
+
+    if [[ -z ${newTitle} || -z ${newArtist} ]] ; then
+        logError "Can't erase title or artist!"
+        return 3
     fi
 }
 
