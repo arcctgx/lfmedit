@@ -53,13 +53,15 @@ urlEncode() {
 }
 
 requestConfirmation() {
-    read -u 1 -p "Proceed? (uppercase Y to confirm, anything else to abort): " -n 1 -r
+    if [[ ! -v dontAsk || $dontAsk != "yes" ]]; then
+        read -u 1 -p "Proceed? (uppercase Y to confirm, anything else to abort): " -n 1 -r
 
-    if [[ ! ${REPLY} =~ ^Y$ ]]; then
+        if [[ ! ${REPLY} =~ ^Y$ ]]; then
+            echo
+            logInfo "Not applying this edit."
+            return 1
+        fi
+
         echo
-        logInfo "Not applying this edit."
-        return 1
     fi
-
-    echo
 }

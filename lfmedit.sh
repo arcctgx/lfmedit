@@ -14,6 +14,7 @@ usage() {
     echo "  -b <string>     new album title"
     echo "  -z <string>     new album artist name"
     echo "  -Z <string>     original album artist name"
+    echo "  -Y              do not ask to confirm an edit"
     echo "  -d              increase level of debug prints"
     echo "  -h              display this help message"
     echo
@@ -38,7 +39,7 @@ checkMandatoryParameters() {
 }
 
 parseArguments() {
-    while getopts ":u:t:a:b:z:Z:dh" options; do
+    while getopts ":u:t:a:b:z:Z:Ydh" options; do
         case "${options}" in
             u)
                 timestamp="${OPTARG}"
@@ -57,6 +58,9 @@ parseArguments() {
                 ;;
             Z)
                 originalAlbumArtist="${OPTARG}"
+                ;;
+            Y)
+                dontAsk="yes"
                 ;;
             d)
                 ((debugLevel++))
