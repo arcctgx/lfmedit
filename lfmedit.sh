@@ -15,6 +15,7 @@ usage() {
     echo "  -z <string>     new album artist name"
     echo "  -Z <string>     original album artist name"
     echo "  -d              increase level of debug prints"
+    echo "  -h              display this help message"
     echo
     echo "Parameters -u and at least one of -t/-a/-b/-z are mandatory."
     echo "Use -Z to override the assumption that original album artist"
@@ -39,7 +40,7 @@ checkMandatoryParameters() {
 }
 
 parseArguments() {
-    while getopts ":u:t:a:b:z:Z:d" options; do
+    while getopts ":u:t:a:b:z:Z:dh" options; do
         case "${options}" in
             u)
                 timestamp="${OPTARG}"
@@ -61,6 +62,9 @@ parseArguments() {
                 ;;
             d)
                 ((debugLevel++))
+                ;;
+            h)
+                usage
                 ;;
             *)
                 # quietly ignore unsupported options
