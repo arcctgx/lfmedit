@@ -28,13 +28,13 @@ checkAuthTokens() {
 
     if [ -z "${lastfm_username}" ]; then
         logError "last.fm username not provided, exiting!"
-        exit 1
+        return 1
     elif [ -z "${lastfm_session_id}" ]; then
         logError "last.fm session ID is not provided, exiting!"
-        exit 1
+        return 2
     elif [ -z "${lastfm_csrf}" ]; then
         logError "last.fm CSRF token is not provided, exiting!"
-        exit 1
+        return 3
     fi
 
     logDebug "all necessary authentication tokens are set"
@@ -57,8 +57,8 @@ requestConfirmation() {
 
     if [[ ! ${REPLY} =~ ^Y$ ]]; then
         echo
-        exit 0
         logInfo "Not applying this edit."
+        return 1
     fi
 
     echo

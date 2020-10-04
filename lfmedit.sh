@@ -21,8 +21,6 @@ usage() {
     echo "Use -Z to override the assumption that original album artist"
     echo "is the same as original track artist in case it's not."
     echo
-
-    exit 1
 }
 
 checkMandatoryParameters() {
@@ -64,7 +62,7 @@ parseArguments() {
                 ((debugLevel++))
                 ;;
             h)
-                usage
+                usage && exit 0
                 ;;
             *)
                 # quietly ignore unsupported options
@@ -86,16 +84,17 @@ parseArguments() {
         logError "Missing mandatory parameters!"
         echo
         usage
+        return 1
     fi
 }
 
 main() {
-    parseArguments "${@}"
-    checkAuthTokens
-    requestOriginalScrobbleData
-    extractOriginalScrobbleData
-    requestScrobbleEdit
-    verifyScrobbleEdit
+    parseArguments "${@}" || exit 1
+    checkAuthTokens || exit 2
+    requestOriginalScrobbleData || exit 3
+    extractOriginalScrobbleData || exit 4
+    requestScrobbleEdit || exit 5
+    verifyScrobbleEdit || exit 6
 }
 
 main "${@}"

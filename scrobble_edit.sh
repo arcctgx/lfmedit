@@ -6,6 +6,18 @@ source "utils.sh"
 # timestamp, silent, verbose
 
 handleApiErrors() {
+    local -r httpCode="${1}"
+
+    if [[ ${httpCode} -ne 200 ]]; then
+        logError "got HTTP error ${httpCode} while sending last.fm API request!"
+    fi
+
+    if ! jq -e . "${apiResponsePath}" &> /dev/null; then
+        logError "last.fm API response is not valid JSON!"
+        rm -f "${verbose}" "${apiResponsePath}"
+        return 1
+    fi
+
     if [[ ${debugLevel} -ge 2 ]]; then
         jq --monochrome-output . "${apiResponsePath}"
     fi
@@ -15,7 +27,7 @@ handleApiErrors() {
         local -r message=$(jq -r '.message' "${apiResponsePath}")
         logError "last.fm error ${errcode}: ${message}"
         rm -f "${verbose}" "${apiResponsePath}"
-        exit 3
+        return 2
     fi
 }
 
@@ -45,18 +57,12 @@ requestOriginalScrobbleData() {
     if [[ ${curlStatus} -ne 0 ]]; then
         logError "failed to send last.fm API request! curl error = ${curlStatus}"
         rm -f "${verbose}" "${apiResponsePath}"
-        exit 2
+        return 1
     fi
 
     logDebug "last.fm API request was sent, httpCode = ${httpCode}"
 
-    if [[ ${httpCode} -ne 200 ]]; then
-        logError "received HTTP error ${httpCode} while sending API request!"
-        rm -f "${verbose}" "${apiResponsePath}"
-        exit 2
-    fi
-
-    handleApiErrors
+    handleApiErrors "${httpCode}" || return 2
 }
 
 extractOriginalScrobbleData() {
@@ -69,7 +75,7 @@ extractOriginalScrobbleData() {
     if [ "${total}" -ne 1 ]; then
         logError "unexpected number of scrobbles in API response! (got ${total} instead of 1)"
         rm -f "${verbose}" "${apiResponsePath}"
-        exit 4
+        return 1
     fi
 
     # Compare timestamps to make sure we got the scrobble we wanted.
@@ -79,7 +85,7 @@ extractOriginalScrobbleData() {
     else
         logError "scrobble timestamp mismatch! (expected: ${timestamp}, received: ${uts})"
         rm -f "${verbose}" "${apiResponsePath}"
-        exit 4
+        return 2
     fi
 
     originalTitle=$(jq -r '.recenttracks.track[-1].name' "${apiResponsePath}")
@@ -151,12 +157,12 @@ detectInvalidChange() {
 
     if [ "${original,,}" == "${new,,}" ]; then
         logError "Case-only changes cannot be applied!"
-        exit 5
+        return 1
     fi
 
     if [ -z "${newTitle}" ] || [ -z "${newArtist}" ] ; then
         logError "can't erase title or artist!"
-        exit 5
+        return 2
     fi
 }
 
@@ -167,7 +173,7 @@ printEditData() {
 
 requestScrobbleEdit() {
     setNewScrobbleData
-    detectInvalidChange
+    detectInvalidChange || return 1
 
     local -r url="https://www.last.fm/user/${lastfm_username}/library/edit?edited-variation=recent-track"
     local -r referer="Referer: https://www.last.fm/user/${lastfm_username}"
@@ -193,7 +199,7 @@ requestScrobbleEdit() {
     printEditData
 
     logDebug "request = ${request}"
-    requestConfirmation
+    requestConfirmation || return 2
 
     httpCode=$(curl ${silent} -o /dev/null -w "%{http_code}\n" "${url}" \
         -H "${referer}" \
@@ -204,7 +210,7 @@ requestScrobbleEdit() {
 
     if [[ ${curlStatus} -ne 0 ]]; then
         logError "failed to send last.fm edit request! curl error = ${curlStatus}"
-        exit 6
+        return 3
     fi
 
     logDebug "last.fm edit request was sent, httpCode = ${httpCode}"
@@ -225,7 +231,7 @@ requestScrobbleEdit() {
                 ;;
         esac
 
-        exit 6
+        return 4
     fi
 }
 
@@ -263,7 +269,7 @@ verifyScrobbleEdit() {
 
     if [[ ${curlStatus} -ne 0 ]]; then
         logError "failed to send last.fm verification request! curl error = ${curlStatus}"
-        exit 7
+        return 1
     fi
 
     logDebug "last.fm verification request was sent, httpCode = ${httpCode}"
@@ -274,11 +280,11 @@ verifyScrobbleEdit() {
             ;;
         500)
             logError "HTTP error ${httpCode}: last.fm still has old scrobble data, edit failed!"
-            exit 7
+            return 2
             ;;
         *)
             logError "HTTP error ${httpCode}: something else went wrong, not sure about edit status"
-            exit 7
+            return 3
             ;;
     esac
 }
