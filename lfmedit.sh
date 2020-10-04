@@ -94,7 +94,6 @@ main() {
     checkAuthTokens
     requestOriginalScrobbleData
     extractOriginalScrobbleData
-    setNewScrobbleData
     requestScrobbleEdit
     verifyScrobbleEdit
 }

@@ -166,6 +166,7 @@ printEditData() {
 }
 
 requestScrobbleEdit() {
+    setNewScrobbleData
     detectInvalidChange
 
     local -r url="https://www.last.fm/user/${lastfm_username}/library/edit?edited-variation=recent-track"
