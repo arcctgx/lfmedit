@@ -53,6 +53,11 @@ urlEncode() {
 }
 
 requestConfirmation() {
+    if [[ -v dryRun && $dryRun == "yes" ]]; then
+        logInfo "Dry run: changes are not applied."
+        return 2
+    fi
+
     if [[ ! -v dontAsk || $dontAsk != "yes" ]]; then
         read -u 1 -p "Proceed? (uppercase Y to confirm, anything else to abort): " -n 1 -r
 

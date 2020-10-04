@@ -14,7 +14,8 @@ usage() {
     echo "  -b <string>     new album title"
     echo "  -z <string>     new album artist name"
     echo "  -Z <string>     original album artist name"
-    echo "  -Y              do not ask to confirm an edit"
+    echo "  -n              dry run: print edits, but do not apply them"
+    echo "  -Y              do not ask to confirm an edit (ignored when -n is used)"
     echo "  -d              increase level of debug prints"
     echo "  -h              display this help message"
     echo
@@ -39,7 +40,7 @@ checkMandatoryParameters() {
 }
 
 parseArguments() {
-    while getopts ":u:t:a:b:z:Z:Ydh" options; do
+    while getopts ":u:t:a:b:z:Z:nYdh" options; do
         case "${options}" in
             u)
                 timestamp="${OPTARG}"
@@ -61,6 +62,9 @@ parseArguments() {
                 ;;
             Y)
                 dontAsk="yes"
+                ;;
+            n)
+                dryRun="yes"
                 ;;
             d)
                 ((debugLevel++))
