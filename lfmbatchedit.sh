@@ -60,10 +60,10 @@ parseArguments() {
 
 applyChangesFrom() {
     local -r file="${1}"
-    local -r nChange=$(grep -E "^\+[0-9]{10}" "${file}" | wc -l)
+    local -r nChange=$(grep -c -E "^\+[0-9]{10}" "${file}")
     local n=0
 
-    grep -E "^\+[0-9]{10}" "${file}" | tr -d + |
+    grep -E "^\+[0-9]{10}" "${file}" | sed "s/^+//" |
         while IFS=$'\t' read -r -a scrobble; do
             ((n++))
             unset -v timestamp newTitle newArtist newAlbum newAlbumArtist
