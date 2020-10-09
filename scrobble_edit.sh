@@ -32,6 +32,16 @@ handleApiErrors() {
 }
 
 requestOriginalScrobbleData() {
+    # I'm not sure if scrobbles submitted before Feb 13 2005, 10:20:00 UTC
+    # (1108290000 Unix time) can be handled by this method.
+    # Adding 100 seconds to the limit because the scrobbles without reliable
+    # timestamp information reach 1108290047 in my exported data.
+    local -r earliest=1108290100
+    if [[ ${timestamp} -le ${earliest} ]]; then
+        logError "Editing scrobbles before Unix time ${earliest} is not supported!"
+        return 1
+    fi
+
     apiResponsePath="$(mktemp -t lfmquery.json.XXXXXX)"
     logDebug "apiResponsePath = ${apiResponsePath}"
 
@@ -57,12 +67,12 @@ requestOriginalScrobbleData() {
     if [[ ${curlStatus} -ne 0 ]]; then
         logError "failed to send last.fm API request! curl error = ${curlStatus}"
         rm -f "${verbose}" "${apiResponsePath}"
-        return 1
+        return 2
     fi
 
     logDebug "last.fm API request was sent, httpCode = ${httpCode}"
 
-    handleApiErrors "${httpCode}" || return 2
+    handleApiErrors "${httpCode}" || return 3
 }
 
 extractOriginalScrobbleData() {
