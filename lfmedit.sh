@@ -33,10 +33,8 @@ checkMandatoryParameters() {
 
     if [ ! -v newTitle ] && [ ! -v newArtist ] && [ ! -v newAlbum ] && [ ! -v newAlbumArtist ] ; then
         logError "At least one of -t/-a/-b/-z parameters must be provided!"
-        return 1
+        return 2
     fi
-
-    return 0
 }
 
 parseArguments() {
