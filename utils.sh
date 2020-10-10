@@ -12,10 +12,6 @@ logInfo() {
     echo -e "INF: ${FUNCNAME[1]}(): ${*}"
 }
 
-logWarning() {
-    echo -e "\e[33mWRN: ${FUNCNAME[1]}(): ${*}\e[0m"
-}
-
 logError() {
     echo -e "\e[31mERR: ${FUNCNAME[1]}(): ${*}\e[0m"
 }
