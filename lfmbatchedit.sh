@@ -77,9 +77,9 @@ applyChangesFrom() {
 
             newTitle="${scrobble[1]}"
             newArtist="${scrobble[2]}"
-            newAlbum=${scrobble[3]}
+            newAlbum="${scrobble[3]}"
 
-            logDebug "timestamp = $timestamp, newTitle = $newTitle, newArtist = $newArtist, newAlbum = $newAlbum"
+            logDebug "timestamp = ${timestamp}, newTitle = ${newTitle}, newArtist = ${newArtist}, newAlbum = ${newAlbum}"
 
             requestScrobbleEdit || continue
             verifyScrobbleEdit || continue
