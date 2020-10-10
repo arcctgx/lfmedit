@@ -4,7 +4,9 @@ source "utils.sh"
 source "scrobble_edit.sh"
 
 usage() {
-    echo "usage: $(basename "$0") [-d] <file> [file2 ...]"
+    echo "usage: $(basename "$0") [options] <file> [file2 ...]"
+    echo
+    echo "Available options:"
     echo
     echo "  -n  dry run: print edits, but do not apply them"
     echo "  -Y  do not ask to confirm an edit (ignored when -n is used)"
