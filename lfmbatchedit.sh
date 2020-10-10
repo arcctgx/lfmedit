@@ -58,6 +58,18 @@ parseArguments() {
     fi
 }
 
+logAppliedEdit() {
+    dateStr=$(date -Iseconds)
+    echo -e "${dateStr}\t+${timestamp}\t${newTitle}\t${newArtist}\t${newAlbum}" >> applied.log
+}
+
+logFailedEdit() {
+    if [[ ! -v dryRun || $dryRun != "yes" ]]; then
+        dateStr=$(date -Iseconds)
+        echo -e "${dateStr}\t+${timestamp}\t${newTitle}\t${newArtist}\t${newAlbum}" >> failed.log
+    fi
+}
+
 applyChangesFrom() {
     local -r file="${1}"
     local -r nChange=$(grep -c -E "^\+[0-9]{10}" "${file}")
@@ -72,8 +84,15 @@ applyChangesFrom() {
 
             timestamp="${scrobble[0]}"
 
-            requestOriginalScrobbleData || continue
-            extractOriginalScrobbleData || continue
+            if ! requestOriginalScrobbleData; then
+                logFailedEdit
+                continue
+            fi
+
+            if ! extractOriginalScrobbleData; then
+                logFailedEdit
+                continue
+            fi
 
             newTitle="${scrobble[1]}"
             newArtist="${scrobble[2]}"
@@ -81,8 +100,17 @@ applyChangesFrom() {
 
             logDebug "timestamp = ${timestamp}, newTitle = ${newTitle}, newArtist = ${newArtist}, newAlbum = ${newAlbum}"
 
-            requestScrobbleEdit || continue
-            verifyScrobbleEdit || continue
+            if ! requestScrobbleEdit; then
+                logFailedEdit
+                continue
+            fi
+
+            if ! verifyScrobbleEdit; then
+                logFailedEdit
+                continue
+            fi
+
+            logAppliedEdit
         done
 }
 

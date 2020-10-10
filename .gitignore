@@ -1,1 +1,5 @@
 auth_tokens
+
+*.txt
+*.log
+*.diff
