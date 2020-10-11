@@ -198,9 +198,8 @@ requestScrobbleEdit() {
     detectInvalidChange || return 1
 
     local -r url="https://www.last.fm/user/${lastfm_username}/library/edit?edited-variation=recent-track"
-    local -r referer="Referer: https://www.last.fm/user/${lastfm_username}"
-    local -r content="Content-Type: application/x-www-form-urlencoded; charset=UTF-8"
-    local -r cookies="Cookie: csrftoken=${lastfm_csrf}; sessionid=${lastfm_session_id}"
+    local -r referer="https://www.last.fm/user/${lastfm_username}"
+    local -r cookies="csrftoken=${lastfm_csrf}; sessionid=${lastfm_session_id}"
     local httpCode=""
     local curlStatus=""
     local request=""
@@ -222,9 +221,8 @@ requestScrobbleEdit() {
 
     httpCode=$(curl ${silent} -o /dev/null -w "%{http_code}\n" "${url}" \
         --user-agent "${userAgent}" \
-        -H "${referer}" \
-        -H "${content}" \
-        -H "${cookies}" \
+        --referer "${referer}" \
+        --cookie "${cookies}" \
         --data-raw "${request}")
     curlStatus="${?}"
 
@@ -264,9 +262,8 @@ verifyScrobbleEdit() {
     # rely on the HTTP status codes, and don't parse the response.
 
     local -r url="https://www.last.fm/user/${lastfm_username}/library/edit?edited-variation=recent-track"
-    local -r referer="Referer: https://www.last.fm/user/${lastfm_username}"
-    local -r content="Content-Type: application/x-www-form-urlencoded; charset=UTF-8"
-    local -r cookies="Cookie: csrftoken=${lastfm_csrf}; sessionid=${lastfm_session_id}"
+    local -r referer="https://www.last.fm/user/${lastfm_username}"
+    local -r cookies="csrftoken=${lastfm_csrf}; sessionid=${lastfm_session_id}"
     local httpCode=""
     local curlStatus=""
     local request=""
@@ -282,9 +279,8 @@ verifyScrobbleEdit() {
 
     httpCode=$(curl ${silent} -o /dev/null -w "%{http_code}\n" "${url}" \
         --user-agent "${userAgent}" \
-        -H "${referer}" \
-        -H "${content}" \
-        -H "${cookies}" \
+        --referer "${referer}" \
+        --cookie "${cookies}" \
         --data-raw "${request}")
     curlStatus="${?}"
 
