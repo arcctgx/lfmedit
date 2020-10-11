@@ -31,6 +31,8 @@ handleApiErrors() {
     fi
 }
 
+userAgent="lfmedit/beta +https://github.com/arcctgx/lfmedit"
+
 requestOriginalScrobbleData() {
     # I'm not sure if scrobbles submitted before Feb 13 2005, 10:20:00 UTC
     # (1108290000 Unix time) can be handled by this method.
@@ -61,7 +63,8 @@ requestOriginalScrobbleData() {
     url+="&user=${lastfm_username}"
     url+="&from=${timeFrom}&to=${timeTo}&limit=${perPage}&page=${page}&format=json"
 
-    httpCode=$(curl ${silent} -o "${apiResponsePath}" -w "%{http_code}\n" "${url}")
+    httpCode=$(curl ${silent} -o "${apiResponsePath}" -w "%{http_code}\n" "${url}" \
+        --user-agent "${userAgent}")
     curlStatus=${?}
 
     if [[ ${curlStatus} -ne 0 ]]; then
@@ -218,6 +221,7 @@ requestScrobbleEdit() {
     requestConfirmation || return 2
 
     httpCode=$(curl ${silent} -o /dev/null -w "%{http_code}\n" "${url}" \
+        --user-agent "${userAgent}" \
         -H "${referer}" \
         -H "${content}" \
         -H "${cookies}" \
@@ -277,6 +281,7 @@ verifyScrobbleEdit() {
     logDebug "request = ${request}"
 
     httpCode=$(curl ${silent} -o /dev/null -w "%{http_code}\n" "${url}" \
+        --user-agent "${userAgent}" \
         -H "${referer}" \
         -H "${content}" \
         -H "${cookies}" \
