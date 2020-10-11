@@ -36,18 +36,6 @@ checkAuthTokens() {
     logDebug "all necessary authentication tokens are set"
 }
 
-urlEncode() {
-    local LANG=C i c e=''
-
-    for (( i=0 ; i<${#1} ; i++ )); do
-        c=${1:$i:1}
-        [[ "$c" =~ [a-zA-Z0-9\.\~\_\-] ]] || printf -v c '%%%02X' "'$c"
-        e+="$c"
-    done
-
-    echo "$e"
-}
-
 requestConfirmation() {
     if [[ -v dryRun && $dryRun == "yes" ]]; then
         logInfo "Dry run: changes are not applied."

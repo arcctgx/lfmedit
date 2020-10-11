@@ -202,28 +202,24 @@ requestScrobbleEdit() {
     local -r cookies="csrftoken=${lastfm_csrf}; sessionid=${lastfm_session_id}"
     local httpCode=""
     local curlStatus=""
-    local request=""
 
-    request+="csrfmiddlewaretoken=${lastfm_csrf}"
-    request+="&track_name=$(urlEncode "${newTitle}")"
-    request+="&artist_name=$(urlEncode "${newArtist}")"
-    request+="&album_name=$(urlEncode "${newAlbum}")"
-    request+="&album_artist_name=$(urlEncode "${newAlbumArtist}")"
-    request+="&timestamp=${timestamp}"
-    request+="&track_name_original=$(urlEncode "${originalTitle}")"
-    request+="&artist_name_original=$(urlEncode "${originalArtist}")"
-    request+="&album_name_original=$(urlEncode "${originalAlbum}")"
-    request+="&album_artist_name_original=$(urlEncode "${originalAlbumArtist}")"
-    request+="&submit=edit-scrobble"
-
-    logDebug "request = ${request}"
     requestConfirmation || return 2
 
     httpCode=$(curl ${silent} -o /dev/null -w "%{http_code}\n" "${url}" \
         --user-agent "${userAgent}" \
         --referer "${referer}" \
         --cookie "${cookies}" \
-        --data-raw "${request}")
+        --data-urlencode "csrfmiddlewaretoken=${lastfm_csrf}" \
+        --data-urlencode "track_name=${newTitle}" \
+        --data-urlencode "artist_name=${newArtist}" \
+        --data-urlencode "album_name=${newAlbum}" \
+        --data-urlencode "album_artist_name=${newAlbumArtist}" \
+        --data-urlencode "timestamp=${timestamp}" \
+        --data-urlencode "track_name_original=${originalTitle}" \
+        --data-urlencode "artist_name_original=${originalArtist}" \
+        --data-urlencode "album_name_original=${originalAlbum}" \
+        --data-urlencode "album_artist_name_original=${originalAlbumArtist}" \
+        --data-urlencode "submit=edit-scrobble")
     curlStatus="${?}"
 
     if [[ ${curlStatus} -ne 0 ]]; then
@@ -266,22 +262,17 @@ verifyScrobbleEdit() {
     local -r cookies="csrftoken=${lastfm_csrf}; sessionid=${lastfm_session_id}"
     local httpCode=""
     local curlStatus=""
-    local request=""
-
-    request+="csrfmiddlewaretoken=${lastfm_csrf}"
-    request+="&artist_name=$(urlEncode "${newArtist}")"
-    request+="&track_name=$(urlEncode "${newTitle}")"
-    request+="&album_name=$(urlEncode "${newAlbum}")"
-    request+="&album_artist_name=$(urlEncode "${newAlbumArtist}")"
-    request+="&timestamp=${timestamp}"
-
-    logDebug "request = ${request}"
 
     httpCode=$(curl ${silent} -o /dev/null -w "%{http_code}\n" "${url}" \
         --user-agent "${userAgent}" \
         --referer "${referer}" \
         --cookie "${cookies}" \
-        --data-raw "${request}")
+        --data-urlencode "csrfmiddlewaretoken=${lastfm_csrf}" \
+        --data-urlencode "artist_name=${newArtist}" \
+        --data-urlencode "track_name=${newTitle}" \
+        --data-urlencode "album_name=${newAlbum}" \
+        --data-urlencode "album_artist_name=${newAlbumArtist}" \
+        --data-urlencode "timestamp=${timestamp}")
     curlStatus="${?}"
 
     if [[ ${curlStatus} -ne 0 ]]; then
