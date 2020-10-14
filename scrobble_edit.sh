@@ -165,15 +165,18 @@ setNewScrobbleData() {
 }
 
 detectInvalidChange() {
-    local -r original="${originalTitle}${originalArtist}${originalAlbum}${originalAlbumArtist}"
-    local -r new="${newTitle}${newArtist}${newAlbum}${newAlbumArtist}"
-
-    if [[ ${original} == ${new} ]]; then
+    if [[ ${originalTitle} == ${newTitle} && \
+          ${originalArtist} == ${newArtist} && \
+          ${originalAlbum} == ${newAlbum} && \
+          ${originalAlbumArtist} == ${newAlbumArtist} ]]; then
         logError "Edit does not change anything!"
         return 1
     fi
 
-    if [[ ${original,,} == ${new,,} ]]; then
+    if [[ ${originalTitle,,} == ${newTitle,,} && \
+          ${originalArtist,,} == ${newArtist,,} && \
+          ${originalAlbum,,} == ${newAlbum,,} && \
+          ${originalAlbumArtist,,} == ${newAlbumArtist,,} ]]; then
         logError "Case-only changes cannot be applied!"
         return 2
     fi
