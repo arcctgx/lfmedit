@@ -91,7 +91,7 @@ applyChangesFrom() {
                 continue
             fi
 
-            if ! extractOriginalScrobbleData; then
+            if ! readOriginalScrobbleData; then
                 logFailedEdit
                 continue
             fi

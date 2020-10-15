@@ -78,7 +78,7 @@ requestOriginalScrobbleData() {
     handleApiErrors "${httpCode}" || return 3
 }
 
-extractOriginalScrobbleData() {
+readOriginalScrobbleData() {
     # We expect that there are at most two tracks in the response:
     # "now playing" (optional), and the one we want (always last).
     # The attribute "total" holds the number of returned scrobbles,

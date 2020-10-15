@@ -98,7 +98,7 @@ main() {
     parseArguments "${@}" || exit 1
     checkAuthTokens || exit 2
     requestOriginalScrobbleData || exit 3
-    extractOriginalScrobbleData || exit 4
+    readOriginalScrobbleData || exit 4
     requestScrobbleEdit || exit 5
     verifyScrobbleEdit || exit 6
 }
