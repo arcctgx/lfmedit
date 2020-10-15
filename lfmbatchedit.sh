@@ -77,6 +77,8 @@ applyChangesFrom() {
     local -r nChange=$(grep -c -E "^\+[0-9]{10}" "${file}")
     local n=0
 
+    local -r timeStart=$(date +%s)
+
     grep -E "^\+[0-9]{10}" "${file}" | sed "s/^+//" |
         while IFS=$'\t' read -r -a scrobble; do
             ((n++))
@@ -114,6 +116,8 @@ applyChangesFrom() {
 
             logAppliedEdit
         done
+
+        logInfo "Processed ${nChange} scrobbles from \"${file}\" in $(($(date +%s)-${timeStart})) seconds."
 }
 
 processFiles() {
