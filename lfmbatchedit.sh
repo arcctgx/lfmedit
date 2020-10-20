@@ -57,6 +57,7 @@ parseArguments() {
         logError "Missing mandatory parameters!"
         echo
         usage
+        return 1
     fi
 }
 
@@ -130,8 +131,8 @@ processFiles() {
 }
 
 main() {
-    parseArguments "${@}"
-    checkAuthTokens
+    parseArguments "${@}" || exit 1
+    checkAuthTokens || exit 2
     processFiles
 }
 
