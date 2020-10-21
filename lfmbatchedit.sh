@@ -83,11 +83,15 @@ applyChangesFrom() {
     grep -E "^\+[0-9]{10}" "${file}" | sed "s/^+//" |
         while IFS=$'\t' read -r -a scrobble; do
             ((n++))
-            unset -v timestamp newTitle newArtist newAlbum newAlbumArtist
 
             logInfo "editing scrobble ${n} of ${nChange}"
 
             timestamp="${scrobble[0]}"
+            newTitle="${scrobble[1]}"
+            newArtist="${scrobble[2]}"
+            newAlbum="${scrobble[3]}"
+
+            logDebug "timestamp = ${timestamp}, newTitle = ${newTitle}, newArtist = ${newArtist}, newAlbum = ${newAlbum}"
 
             if ! requestOriginalScrobbleData; then
                 logFailedEdit
@@ -98,12 +102,6 @@ applyChangesFrom() {
                 logFailedEdit
                 continue
             fi
-
-            newTitle="${scrobble[1]}"
-            newArtist="${scrobble[2]}"
-            newAlbum="${scrobble[3]}"
-
-            logDebug "timestamp = ${timestamp}, newTitle = ${newTitle}, newArtist = ${newArtist}, newAlbum = ${newAlbum}"
 
             if ! requestScrobbleEdit; then
                 logFailedEdit
