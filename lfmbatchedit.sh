@@ -39,7 +39,7 @@ parseArguments() {
         esac
     done
 
-    if [ "${debugLevel}" -ge 2 ]; then
+    if [[ ${debugLevel} -ge 2 ]]; then
         verbose="--verbose"
         silent=""
     else
@@ -116,7 +116,7 @@ applyChangesFrom() {
             logAppliedEdit
         done
 
-        logInfo "Processed ${nChange} scrobbles from \"${file}\" in $(($(date +%s)-${timeStart})) seconds."
+        logInfo "Processed ${nChange} scrobbles from \"${file}\" in $(($(date +%s)-timeStart)) seconds."
 }
 
 processFiles() {

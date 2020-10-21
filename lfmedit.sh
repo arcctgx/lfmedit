@@ -26,12 +26,12 @@ usage() {
 }
 
 checkMandatoryParameters() {
-    if [ ! -v timestamp ] || [ -z "${timestamp}" ]; then
+    if [[ ! -v timestamp  ||  -z "${timestamp}" ]]; then
         logError "Unix timestamp (-u) must be provided!"
         return 1
     fi
 
-    if [ ! -v newTitle ] && [ ! -v newArtist ] && [ ! -v newAlbum ] && [ ! -v newAlbumArtist ] ; then
+    if [[ ! -v newTitle && ! -v newArtist && ! -v newAlbum && ! -v newAlbumArtist ]]; then
         logError "At least one of -t/-a/-b/-z parameters must be provided!"
         return 2
     fi
@@ -76,7 +76,7 @@ parseArguments() {
         esac
     done
 
-    if [ "${debugLevel}" -ge 2 ]; then
+    if [[ ${debugLevel} -ge 2 ]]; then
         verbose="--verbose"
         silent=""
     else

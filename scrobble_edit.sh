@@ -85,7 +85,7 @@ readOriginalScrobbleData() {
     # excluding "now playing" one. This should be equal to one.
     local -r total=$(jq -r '.recenttracks."@attr".total' "${apiResponsePath}")
     logDebug "total = ${total}"
-    if [ "${total}" -ne 1 ]; then
+    if [[ ${total} -ne 1 ]]; then
         logError "unexpected number of scrobbles in API response! (got ${total} instead of 1)"
         rm -f "${verbose}" "${apiResponsePath}"
         return 1
@@ -93,7 +93,7 @@ readOriginalScrobbleData() {
 
     # Compare timestamps to make sure we got the scrobble we wanted.
     local -r uts=$(jq -r '.recenttracks.track[-1].date.uts' "${apiResponsePath}")
-    if [ "${uts}" -eq "${timestamp}" ]; then
+    if [[ ${uts} -eq ${timestamp} ]]; then
         logDebug "got scrobble with matching timestamp: uts = $uts"
     else
         logError "scrobble timestamp mismatch! (expected: ${timestamp}, received: ${uts})"
@@ -107,14 +107,15 @@ readOriginalScrobbleData() {
     logDebug "originalTitle = ${originalTitle}, originalArtist = ${originalArtist}, originalAlbum = ${originalAlbum}"
 
     # There's no way to get original album artist from last.fm API.
+    # If it was not provided by -Z option, we have to guess.
     # In most cases this will be the same as track artist.
-    if [ ! -v originalAlbumArtist ]; then
+    if [[ ! -v originalAlbumArtist ]]; then
         logDebug "assuming original album artist is the same as original track artist"
         originalAlbumArtist="${originalArtist}"
     fi
 
     # If there's no original album, then original album artist must be blank too.
-    if [ -z "${originalAlbum}" ]; then
+    if [[ -z ${originalAlbum} ]]; then
         logDebug "no original album set for scrobble, assuming empty original album artist."
         originalAlbumArtist=""
     fi
@@ -125,8 +126,8 @@ readOriginalScrobbleData() {
 }
 
 setNewAlbumArtist() {
-    if [ ! -v newAlbumArtist ]; then
-        if [ "${newArtist}" != "${originalArtist}" ]; then
+    if [[ ! -v newAlbumArtist ]]; then
+        if [[ ${newArtist} != ${originalArtist} ]]; then
             logDebug "new album artist not set when changing artist, assuming same as new artist."
             newAlbumArtist="${newArtist}"
         else
@@ -135,27 +136,27 @@ setNewAlbumArtist() {
         fi
     fi
 
-    if [ -z "${newAlbum}" ]; then
+    if [[ -z ${newAlbum} ]]; then
         logDebug "new album is blank, blanking new album artist to match."
         newAlbumArtist=""
     fi
 
-    if [ -z "${originalAlbum}" ] && [ -n "${newAlbum}" ] && [ -z "${newAlbumArtist}" ] ; then
+    if [[ -z ${originalAlbum} && -n ${newAlbum} && -z ${newAlbumArtist} ]]; then
         logDebug "assuming new album artist is the same as original artist when adding album information."
         newAlbumArtist="${originalArtist}"
     fi
 }
 
 setNewScrobbleData() {
-    if [ ! -v newTitle ]; then
+    if [[ ! -v newTitle ]]; then
         newTitle="${originalTitle}"
     fi
 
-    if [ ! -v newArtist ]; then
+    if [[ ! -v newArtist ]]; then
         newArtist="${originalArtist}"
     fi
 
-    if [ ! -v newAlbum ]; then
+    if [[ ! -v newAlbum ]]; then
         newAlbum="${originalAlbum}"
     fi
 
@@ -181,7 +182,7 @@ detectInvalidChange() {
         return 2
     fi
 
-    if [[ -z ${newTitle} || -z ${newArtist} ]] ; then
+    if [[ -z ${newTitle} || -z ${newArtist} ]]; then
         logError "Can't erase title or artist!"
         return 3
     fi
