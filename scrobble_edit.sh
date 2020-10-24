@@ -31,7 +31,7 @@ handleApiErrors() {
     fi
 }
 
-userAgent="lfmedit/beta +https://github.com/arcctgx/lfmedit"
+userAgent="lfmedit/1.0.0 +https://github.com/arcctgx/lfmedit"
 
 requestOriginalScrobbleData() {
     # I'm not sure if scrobbles submitted before Feb 13 2005, 10:20:00 UTC
