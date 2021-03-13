@@ -13,7 +13,7 @@ logInfo() {
 }
 
 logError() {
-    echo -e "\e[31mERR: ${FUNCNAME[1]}(): ${*}\e[0m"
+    echo -e "\e[33mERR: ${FUNCNAME[1]}(): ${*}\e[0m"
 }
 
 checkAuthTokens() {

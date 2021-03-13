@@ -84,6 +84,10 @@ parseArguments() {
         silent="--silent"
     fi
 
+    if [[ ${debugLevel} -ge 3 ]]; then
+        set -x
+    fi
+
     logDebug "args = ${*}"
 
     if ! checkMandatoryParameters; then

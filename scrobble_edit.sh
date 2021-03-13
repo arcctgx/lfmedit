@@ -5,6 +5,8 @@ source "utils.sh"
 # Requires following global variables to be set:
 # timestamp, silent, verbose
 
+userAgent="lfmedit/1.0.1 +https://github.com/arcctgx/lfmedit"
+
 handleApiErrors() {
     local -r httpCode="${1}"
 
@@ -30,8 +32,6 @@ handleApiErrors() {
         return 2
     fi
 }
-
-userAgent="lfmedit/1.0.1 +https://github.com/arcctgx/lfmedit"
 
 requestOriginalScrobbleData() {
     # I'm not sure if scrobbles submitted before Feb 13 2005, 10:20:00 UTC
