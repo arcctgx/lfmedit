@@ -5,7 +5,7 @@ source "utils.sh"
 # Requires following global variables to be set:
 # timestamp, silent, verbose
 
-userAgent="lfmedit/1.0.1 +https://github.com/arcctgx/lfmedit"
+userAgent="lfmedit/1.0.2 +https://github.com/arcctgx/lfmedit"
 
 handleApiErrors() {
     local -r httpCode="${1}"
@@ -24,7 +24,7 @@ handleApiErrors() {
         jq --monochrome-output . "${apiResponsePath}"
     fi
 
-    if [[ $(jq 'has("error")' "${apiResponsePath}") == "true" ]]; then
+    if [[ "$(jq 'has("error")' "${apiResponsePath}")" == "true" ]]; then
         local -r errcode=$(jq '.error' "${apiResponsePath}")
         local -r message=$(jq -r '.message' "${apiResponsePath}")
         logError "last.fm error ${errcode}: ${message}"
@@ -115,7 +115,7 @@ readOriginalScrobbleData() {
     fi
 
     # If there's no original album, then original album artist must be blank too.
-    if [[ -z ${originalAlbum} ]]; then
+    if [[ -z "${originalAlbum}" ]]; then
         logDebug "no original album set for scrobble, assuming empty original album artist."
         originalAlbumArtist=""
     fi
@@ -127,7 +127,7 @@ readOriginalScrobbleData() {
 
 setNewAlbumArtist() {
     if [[ ! -v newAlbumArtist ]]; then
-        if [[ ${newArtist} != ${originalArtist} ]]; then
+        if [[ "${newArtist}" != "${originalArtist}" ]]; then
             logDebug "new album artist not set when changing artist, assuming same as new artist."
             newAlbumArtist="${newArtist}"
         else
@@ -136,12 +136,12 @@ setNewAlbumArtist() {
         fi
     fi
 
-    if [[ -z ${newAlbum} ]]; then
+    if [[ -z "${newAlbum}" ]]; then
         logDebug "new album is blank, blanking new album artist to match."
         newAlbumArtist=""
     fi
 
-    if [[ -z ${originalAlbum} && -n ${newAlbum} && -z ${newAlbumArtist} ]]; then
+    if [[ -z "${originalAlbum}" && -n "${newAlbum}" && -z "${newAlbumArtist}" ]]; then
         logDebug "assuming new album artist is the same as original artist when adding album information."
         newAlbumArtist="${originalArtist}"
     fi
@@ -166,23 +166,23 @@ setNewScrobbleData() {
 }
 
 detectInvalidChange() {
-    if [[ ${originalTitle} == ${newTitle} && \
-          ${originalArtist} == ${newArtist} && \
-          ${originalAlbum} == ${newAlbum} && \
-          ${originalAlbumArtist} == ${newAlbumArtist} ]]; then
+    if [[ "${originalTitle}" == "${newTitle}" && \
+          "${originalArtist}" == "${newArtist}" && \
+          "${originalAlbum}" == "${newAlbum}" && \
+          "${originalAlbumArtist}" == "${newAlbumArtist}" ]]; then
         logError "Edit does not change anything!"
         return 1
     fi
 
-    if [[ ${originalTitle,,} == ${newTitle,,} && \
-          ${originalArtist,,} == ${newArtist,,} && \
-          ${originalAlbum,,} == ${newAlbum,,} && \
-          ${originalAlbumArtist,,} == ${newAlbumArtist,,} ]]; then
+    if [[ "${originalTitle,,}" == "${newTitle,,}" && \
+          "${originalArtist,,}" == "${newArtist,,}" && \
+          "${originalAlbum,,}" == "${newAlbum,,}" && \
+          "${originalAlbumArtist,,}" == "${newAlbumArtist,,}" ]]; then
         logError "Case-only changes cannot be applied!"
         return 2
     fi
 
-    if [[ -z ${newTitle} || -z ${newArtist} ]]; then
+    if [[ -z "${newTitle}" || -z "${newArtist}" ]]; then
         logError "Can't erase title or artist!"
         return 3
     fi

@@ -71,7 +71,7 @@ logAppliedEdit() {
 }
 
 logFailedEdit() {
-    if [[ ! -v dryRun || $dryRun != "yes" ]]; then
+    if [[ ! -v dryRun || "${dryRun}" != "yes" ]]; then
         dateStr=$(date -Iseconds)
         echo -e "${dateStr}\t+${timestamp}\t${newTitle}\t${newArtist}\t${newAlbum}" >> failed.log
     fi
