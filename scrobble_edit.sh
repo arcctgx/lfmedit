@@ -5,7 +5,7 @@ source "utils.sh"
 # Requires following global variables to be set:
 # timestamp, silent, verbose
 
-userAgent="lfmedit/1.0.2 +https://github.com/arcctgx/lfmedit"
+userAgent="lfmedit/1.0.3 +https://github.com/arcctgx/lfmedit"
 
 handleApiErrors() {
     local -r httpCode="${1}"
@@ -260,6 +260,11 @@ verifyScrobbleEdit() {
     # request will fail with HTTP error 500. Otherwise the request will be successful,
     # and it will contain new scrobble data in its body. For now I'm assuming I can
     # rely on the HTTP status codes, and don't parse the response.
+
+    # It turns out false positives are possible, so don't enable verification by default.
+    if [[ ! -v enableVerification || "${enableVerification}" != "yes" ]]; then
+        return 0
+    fi
 
     local -r url="https://www.last.fm/user/${lastfm_username}/library/edit?edited-variation=recent-track"
     local -r referer="https://www.last.fm/user/${lastfm_username}"

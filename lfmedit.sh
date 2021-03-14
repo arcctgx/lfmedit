@@ -16,6 +16,7 @@ usage() {
     echo "  -Z <string>     original album artist name"
     echo "  -n              dry run: print edits, but do not apply them"
     echo "  -Y              do not ask to confirm an edit (ignored when -n is used)"
+    echo "  -V              enable edit verification"
     echo "  -d              increase level of debug prints"
     echo "  -h              display this help message"
     echo
@@ -38,7 +39,7 @@ checkMandatoryParameters() {
 }
 
 parseArguments() {
-    while getopts ":u:t:a:b:z:Z:nYdh" options; do
+    while getopts ":u:t:a:b:z:Z:nYVdh" options; do
         case "${options}" in
             u)
                 timestamp="${OPTARG}"
@@ -58,11 +59,17 @@ parseArguments() {
             Z)
                 originalAlbumArtist="${OPTARG}"
                 ;;
-            Y)
-                dontAsk="yes"
-                ;;
             n)
                 dryRun="yes"
+                logDebug "Dry run, changes will not be applied."
+                ;;
+            Y)
+                dontAsk="yes"
+                logDebug "Asking for edit confirmation is disabled."
+                ;;
+            V)
+                enableVerification="yes"
+                logDebug "Edit verification is enabled."
                 ;;
             d)
                 ((debugLevel++))

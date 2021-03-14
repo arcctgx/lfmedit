@@ -10,6 +10,7 @@ usage() {
     echo
     echo "  -n  dry run: print edits, but do not apply them"
     echo "  -Y  do not ask to confirm an edit (ignored when -n is used)"
+    echo "  -V  enable verification of edits"
     echo "  -d  increase level of debug prints"
     echo "  -h  display this help message"
     echo
@@ -19,13 +20,19 @@ usage() {
 }
 
 parseArguments() {
-    while getopts ":nYdh" options; do
+    while getopts ":nYVdh" options; do
         case "${options}" in
             n)
                 dryRun="yes"
+                logDebug "Dry run, changes will not be applied."
                 ;;
             Y)
                 dontAsk="yes"
+                logDebug "Asking for edit confirmation is disabled."
+                ;;
+            V)
+                enableVerification="yes"
+                logDebug "Verification of edits is enabled."
                 ;;
             d)
                 ((debugLevel++))
