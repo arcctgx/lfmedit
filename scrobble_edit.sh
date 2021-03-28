@@ -189,8 +189,8 @@ detectInvalidChange() {
 }
 
 printEditData() {
-    echo -e "\e[31m-${timestamp}    ${originalTitle}    ${originalArtist}    ${originalAlbum}    ${originalAlbumArtist}\e[0m"
-    echo -e "\e[32m+${timestamp}    ${newTitle}    ${newArtist}    ${newAlbum}    ${newAlbumArtist}\e[0m"
+    echo -e "\e[94m-${timestamp}    ${originalTitle}    ${originalArtist}    ${originalAlbum}    ${originalAlbumArtist}\e[0m"
+    echo -e "\e[92m+${timestamp}    ${newTitle}    ${newArtist}    ${newAlbum}    ${newAlbumArtist}\e[0m"
 }
 
 requestScrobbleEdit() {
