@@ -96,6 +96,7 @@ applyChangesFrom() {
             ((n++))
             unset -v originalAlbumArtist newAlbumArtist
 
+            echo
             logInfo "editing scrobble ${n} of ${nChange}"
 
             timestamp="${scrobble[0]}"
@@ -128,6 +129,7 @@ applyChangesFrom() {
             logAppliedEdit
         done
 
+        echo
         logInfo "Processed ${nChange} scrobbles from \"${file}\" in $(($(date +%s)-timeStart)) seconds."
 }
 
