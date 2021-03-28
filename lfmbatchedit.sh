@@ -94,6 +94,7 @@ applyChangesFrom() {
     grep -E "^\+[0-9]{10}" "${file}" | sed "s/^+//" | tr '\011' '\037' |
         while IFS=$'\037' read -r -a scrobble; do
             ((n++))
+            unset -v originalAlbumArtist newAlbumArtist
 
             logInfo "editing scrobble ${n} of ${nChange}"
 
