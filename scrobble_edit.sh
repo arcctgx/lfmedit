@@ -5,7 +5,7 @@ source "utils.sh"
 # Requires following global variables to be set:
 # timestamp, silent, verbose
 
-userAgent="lfmedit/1.0.4 +https://github.com/arcctgx/lfmedit"
+userAgent="lfmedit/1.0.5 +https://github.com/arcctgx/lfmedit"
 
 handleApiErrors() {
     local -r httpCode="${1}"
