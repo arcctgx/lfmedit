@@ -51,10 +51,10 @@ from the scrobble), but it's not allowed to remove artist or title.
 
 ![Edit a single scrobble with lfmedit.sh](img/batch_edit.png)
 
-The fields in `scrobbles.txt` begin with the Unix timestamp, followed by the target
-title, artist and album. Fields are separated by tabs. Successful and failed edits
-are logged to appropriate files. The switch `-Y` disables asking for edit confirmation.
-Run the scripts with `-h` switch to get the full list of supported options.
+Each line in `scrobbles.txt` begins with a `+` character. It is immediately followed by
+the Unix timestamp, then by target title, artist and album separated by tabs. Successful
+and failed edits are logged to appropriate files. The switch `-Y` disables asking for edit
+confirmation. Run the scripts with `-h` switch to get the full list of supported options.
 
 # Known issues / limitations
 
@@ -65,18 +65,18 @@ Run the scripts with `-h` switch to get the full list of supported options.
   scripts try to make an assumption, but there is no guarantee it will be correct.
   If `lfmedit.sh` makes a wrong assumption which causes an edit to fail, it's possible
   to override it using `-Z` command line option.
-* Last.fm seems to treat the Unix timestamp as an identifier of a scrobble. But this
-  is not unique: the scrobbles before 2005-02-13 10:20 UTC all have the same timestamp
-  in the database. I'm not sure if it's possible to safely edit these scrobbles, so the
-  scripts will refuse to edit them.
+* Last.fm seems to treat the Unix timestamp as an identifier of a scrobble. But before
+  2005-02-13 10:20 UTC the timestamps are not unique: multiple scrobbles can share
+  the same timestamp in Last.fm database. I'm not sure if it's possible to edit these
+  scrobbles without side effects, so the scripts will refuse to modify them.
 * Edit verification is not very reliable - I've seen both false positives and false
   negatives in my testing. For this reason verification is disabled by default. It
   can be enabled using `-V` option.
 * It's slow. For each scrobble edit the script sends one Last.fm API request to get
   original scrobble data, then a POST request to edit the scrobble, and another POST
   request to verify the edit. This involves spawning several `curl` and `jq` processes,
-  plus the network overhead also plays a role. And sometimes Last.fm is very slow to
-  respond.
+  plus the network overhead also plays a role. `lfmbatchedit.sh` sends edit requests
+  sequentially, and sometimes Last.fm is slow to respond.
 
 # Further development
 None. At least not in this repo.
