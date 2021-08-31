@@ -1,4 +1,4 @@
-auth_tokens
+auth_tokens.sh
 
 *.txt
 *.log
