@@ -1,6 +1,16 @@
-#!/bin/bash
+# This file contains Last.fm access tokens required for editing scrobbles.
+# Copy this to ~/.config/lfmedit/auth_tokens (or else if your XDG_CONFIG_HOME
+# is different) and fill in required data. Make sure the file is not readable
+# to anyone but you.
 
-# set your last.fm access tokens here:
+# Your Last.fm username.
 export lastfm_username=""
+
+# Last.fm session ID. Stored in your browser as "sessionid" cookie. Very long
+# (more than 600 bytes), often begins with ".eJyNk". Be careful: it is valid
+# for one year and is not invalidated by logging out of Last.fm!
 export lastfm_session_id=""
+
+# Last.fm CSRF token. Stored in your browser as "csrftoken" cookie. 64 bytes
+# long.
 export lastfm_csrf=""

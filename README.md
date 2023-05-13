@@ -31,7 +31,8 @@ The username is not a problem, but obtaining the other two tokens is not as
 straightforward. Session ID and CSRF token are created at login and stored in
 browser cookies. It's possible to get them using the browser developer console
 (F12 in Firefox or Chrome). Copy the values of cookies `sessionid` and `csrftoken`,
-and set the relevant variables in `auth_tokens.sh`.
+and set the relevant variables in `lfmedit/auth_tokens` in your user's config
+directory. See the sample file for details.
 
 ![Firefox developer console with relevant cookies](img/cookies.png)
 
