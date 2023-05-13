@@ -63,6 +63,7 @@ requestOriginalScrobbleData() {
     url+="&user=${lastfm_username}"
     url+="&from=${timeFrom}&to=${timeTo}&limit=${perPage}&page=${page}&format=json"
 
+    # shellcheck disable=SC2086
     httpCode=$(curl ${silent} -o "${apiResponsePath}" -w "%{http_code}\n" "${url}" \
         --user-agent "${userAgent}")
     curlStatus=${?}
@@ -209,6 +210,7 @@ requestScrobbleEdit() {
 
     requestConfirmation || return 2
 
+    # shellcheck disable=SC2086
     httpCode=$(curl ${silent} -o /dev/null -w "%{http_code}\n" "${url}" \
         --user-agent "${userAgent}" \
         --referer "${referer}" \
@@ -272,6 +274,7 @@ verifyScrobbleEdit() {
     local httpCode=""
     local curlStatus=""
 
+    # shellcheck disable=SC2086
     httpCode=$(curl ${silent} -o /dev/null -w "%{http_code}\n" "${url}" \
         --user-agent "${userAgent}" \
         --referer "${referer}" \
