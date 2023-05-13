@@ -17,9 +17,15 @@ logError() {
 }
 
 checkAuthTokens() {
-    if [[ -f auth_tokens.sh ]]; then
-        logDebug "reading auth_tokens.sh file"
-        source auth_tokens.sh
+    local -r config_dir="${XDG_CONFIG_HOME:-${HOME}/.config}"
+    local -r auth_tokens_file="${config_dir}/lfmedit/auth_tokens"
+
+    if [[ -r "${auth_tokens_file}" ]]; then
+        logDebug "reading authentication tokens from ${auth_tokens_file}"
+        # shellcheck disable=SC1090
+        source "${auth_tokens_file}"
+    else
+        logDebug "failed to read ${auth_tokens_file}"
     fi
 
     if [[ -z "${lastfm_username}" ]]; then
