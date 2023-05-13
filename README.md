@@ -1,4 +1,5 @@
-# Rationale
+# lfmedit
+
 Last.fm subscribers have the ability to edit their scrobbles, i.e. to update the
 title, artist, album or album artist of a scrobble. This can only be done using
 Last.fm website UI, at the time of writing there is no Last.fm API method for
@@ -7,19 +8,21 @@ editing scrobbles.
 `lfmedit.sh` and `lfmbatchedit.sh` allow sending scrobble edit requests from the
 command line, which makes it possible to automate the editing process.
 
-# Using the scripts
+## Using the scripts
 
-## Requirements
+### Requirements
+
 * `bash`
 * `curl`
 * `jq`
 * Last.fm subscription
 
-## Authentication
+### Authentication
 
 Only an authenticated Last.fm subscriber is authorized to edit scrobbles. The
 scripts mimic the behavior of the website sending edit requests to Last.fm
 backend, so they require the same set of authentication tokens:
+
 * Last.fm username
 * session ID
 * CSRF token
@@ -32,9 +35,9 @@ and set the relevant variables in `auth_tokens.sh`.
 
 ![Firefox developer console with relevant cookies](img/cookies.png)
 
-## Usage examples
+### Usage examples
 
-### Change the title and artist of a single scrobble:
+#### Change the title and artist of a single scrobble
 
 ![Edit a single scrobble with lfmedit.sh](img/single_edit.png)
 
@@ -47,7 +50,7 @@ column) was automatically changed to match the new track artist.
 It is possible to remove information (e.g. passing `-b ""` will remove album field
 from the scrobble), but it's not allowed to remove artist or title.
 
-### Edit several scrobbles:
+#### Edit several scrobbles
 
 ![Edit a single scrobble with lfmedit.sh](img/batch_edit.png)
 
@@ -56,7 +59,7 @@ the Unix timestamp, then by target title, artist and album separated by tabs. Su
 and failed edits are logged to appropriate files. The switch `-Y` disables asking for edit
 confirmation. Run the scripts with `-h` switch to get the full list of supported options.
 
-# Known issues / limitations
+## Known issues / limitations
 
 * `lfmedit.sh` is not very useful, in a way it's just a development version of
   `lfmbatchedit.sh`
@@ -78,7 +81,8 @@ confirmation. Run the scripts with `-h` switch to get the full list of supported
   plus the network overhead also plays a role. `lfmbatchedit.sh` sends edit requests
   sequentially, and sometimes Last.fm is slow to respond.
 
-# Further development
+## Further development
+
 None. At least not in this repo.
 
 This was supposed to be a quick-and-dirty proof of concept, and this is the reason
