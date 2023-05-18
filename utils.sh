@@ -60,3 +60,20 @@ requestConfirmation() {
         echo
     fi
 }
+
+pauseEditing() {
+    local -r seconds="${1}"
+
+    echo -ne "INF: Waiting ${seconds} seconds...  "
+    for (( i=0; i<seconds; i++ )); do
+        echo -ne "\b|"
+        sleep 0.25
+        echo -ne "\b/"
+        sleep 0.25
+        echo -ne "\b-"
+        sleep 0.25
+        echo -ne "\b\\"
+        sleep 0.25
+    done
+    echo
+}

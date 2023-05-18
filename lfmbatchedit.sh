@@ -3,6 +3,9 @@
 source "utils.sh"
 source "scrobble_edit.sh"
 
+burst_size="${LFMEDIT_BURST_SIZE:-15}"
+burst_interval="${LFMEDIT_BURST_INTERVAL:-25}"
+
 usage() {
     echo "usage: $(basename "$0") [options] <file> [file2 ...]"
     echo
@@ -58,6 +61,7 @@ parseArguments() {
         set -x
     fi
 
+    logDebug "burst size: ${burst_size}, burst interval: ${burst_interval}"
     logDebug "args = ${*}"
 
     shift $((OPTIND-1))
@@ -127,6 +131,11 @@ applyChangesFrom() {
             fi
 
             logAppliedEdit
+
+            if [[ ! -v dryRun ]] || [[ "${dryRun}" != "yes" ]] && (( n % burst_size == 0 )); then
+                echo
+                pauseEditing "${burst_interval}"
+            fi
         done
 
         echo

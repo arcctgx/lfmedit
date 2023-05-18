@@ -243,6 +243,9 @@ requestScrobbleEdit() {
             404)
                 logError "HTTP error ${httpCode}: check last.fm session ID"
                 ;;
+            406)
+                logError "HTTP error ${httpCode}: throttling detected, try again later"
+                ;;
             500)
                 logError "HTTP error ${httpCode}: check edit parameters (wrong original album artist?)"
                 ;;
