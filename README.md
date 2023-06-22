@@ -80,7 +80,9 @@ confirmation. Run the scripts with `-h` switch to get the full list of supported
   original scrobble data, then a POST request to edit the scrobble, and another POST
   request to verify the edit. This involves spawning several `curl` and `jq` processes,
   plus the network overhead also plays a role. `lfmbatchedit.sh` sends edit requests
-  sequentially, and sometimes Last.fm is slow to respond.
+  sequentially, and sometimes Last.fm is slow to respond. Furthermore, at some time
+  between May 2022 and May 2023 Last.fm implemented rate limiting, which required
+  adding delays to `lfmbatchedit.sh` to avoid throttling.
 
 ## Further development
 
