@@ -69,10 +69,9 @@ confirmation. Run the scripts with `-h` switch to get the full list of supported
   scripts try to make an assumption, but there is no guarantee it will be correct.
   If `lfmedit.sh` makes a wrong assumption which causes an edit to fail, it's possible
   to override it using `-Z` command line option.
-* Last.fm seems to treat the Unix timestamp as an identifier of a scrobble. But before
-  2005-02-13 10:20 UTC the timestamps are not unique: multiple scrobbles can share
-  the same timestamp in Last.fm database. I'm not sure if it's possible to edit these
-  scrobbles without side effects, so the scripts will refuse to modify them.
+* "Unknown Date" scrobbles cannot be edited. This is a consequence of getting original
+  scrobble data from the API: the timestamps of these scrobbles are artificial and not
+  unique, so original scrobble data cannot be retrieved by timestamp query.
 * Edit verification is not very reliable - I've seen both false positives and false
   negatives in my testing. For this reason verification is disabled by default. It
   can be enabled using `-V` option.
