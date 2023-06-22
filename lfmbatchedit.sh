@@ -92,12 +92,14 @@ applyChangesFrom() {
     local -r file="${1}"
     local -r nChange=$(grep -c -E "^\+[0-9]{10}" "${file}")
     local n=0
+    local remaining=${nChange}
 
     local -r timeStart=$(date +%s)
 
     grep -E "^\+[0-9]{10}" "${file}" | sed "s/^+//" | tr '\011' '\037' |
         while IFS=$'\037' read -r -a scrobble; do
             ((n++))
+            ((remaining--))
             unset -v originalAlbumArtist newAlbumArtist
 
             echo
@@ -132,7 +134,8 @@ applyChangesFrom() {
 
             logAppliedEdit
 
-            if [[ ! -v dryRun ]] || [[ "${dryRun}" != "yes" ]] && (( n % burst_size == 0 )); then
+            if [[ ! -v dryRun ]] || [[ "${dryRun}" != "yes" ]] &&
+                (( n % burst_size == 0 )) && [[ ${remaining} -ne 0 ]]; then
                 echo
                 pauseEditing "${burst_interval}"
             fi
