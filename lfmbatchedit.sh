@@ -17,9 +17,6 @@ usage() {
     echo "  -d  increase level of debug prints"
     echo "  -h  display this help message"
     echo
-    echo "Input files are diffs of last.fm library export files"
-    echo "compatible with the format used by lastscrape tool."
-    echo
 }
 
 parseArguments() {
@@ -76,27 +73,32 @@ parseArguments() {
     fi
 }
 
+makeLogEntry() {
+    local -r dateStr=$(date -Iseconds)
+    local -r originalData="${timestamp}\t${originalTitle}\t${originalArtist}\t${originalAlbum}"
+    local -r newData="${newTimestamp}\t${newTitle}\t${newArtist}\t${newAlbum}"
+    echo -e "${dateStr}\t${originalData}\t${newData}"
+}
+
 logAppliedEdit() {
-    dateStr=$(date -Iseconds)
-    echo -e "${dateStr}\t+${timestamp}\t${newTitle}\t${newArtist}\t${newAlbum}" >> applied.log
+    makeLogEntry >> applied.log
 }
 
 logFailedEdit() {
     if [[ ! -v dryRun || "${dryRun}" != "yes" ]]; then
-        dateStr=$(date -Iseconds)
-        echo -e "${dateStr}\t+${timestamp}\t${newTitle}\t${newArtist}\t${newAlbum}" >> failed.log
+        makeLogEntry >> failed.log
     fi
 }
 
 applyChangesFrom() {
     local -r file="${1}"
-    local -r nChange=$(grep -c -E "^\+[0-9]{10}" "${file}")
+    local -r nChange=$(wc -l "${file}" | awk '{print $1}')
     local n=0
     local remaining=${nChange}
 
     local -r timeStart=$(date +%s)
 
-    grep -E "^\+[0-9]{10}" "${file}" | sed "s/^+//" | tr '\011' '\037' |
+    tr '\011' '\037' < "${file}" |
         while IFS=$'\037' read -r -a scrobble; do
             ((n++))
             ((remaining--))
@@ -106,21 +108,25 @@ applyChangesFrom() {
             logInfo "editing scrobble ${n} of ${nChange}"
 
             timestamp="${scrobble[0]}"
-            newTitle="${scrobble[1]}"
-            newArtist="${scrobble[2]}"
-            newAlbum="${scrobble[3]}"
+            originalTitle="${scrobble[1]}"
+            originalArtist="${scrobble[2]}"
+            originalAlbum="${scrobble[3]}"
+            newTimestamp="${scrobble[4]}"
+            newTitle="${scrobble[5]}"
+            newArtist="${scrobble[6]}"
+            newAlbum="${scrobble[7]}"
 
-            logDebug "timestamp = ${timestamp}, newTitle = ${newTitle}, newArtist = ${newArtist}, newAlbum = ${newAlbum}"
+            logDebug "timestamp = ${timestamp}, originalTitle = ${originalTitle}, originalArtist = ${originalArtist}, originalAlbum = ${originalAlbum}"
+            logDebug "newTimestamp = ${newTimestamp}, newTitle = ${newTitle}, newArtist = ${newArtist}, newAlbum = ${newAlbum}"
 
-            if ! requestOriginalScrobbleData; then
-                logFailedEdit
-                continue
+            if [[ ${newTimestamp} -ne ${timestamp} ]]; then
+                logError "Timestamp mismatch in scrobble ${n}: ${timestamp} vs. ${newTimestamp}, aborting!"
+                exit 3
             fi
 
-            if ! readOriginalScrobbleData; then
-                logFailedEdit
-                continue
-            fi
+            # originalAlbumArtist is likely always unset when this function
+            # is called because lfmbatchedit does not support -Z option.
+            handleAlbumArtist
 
             if ! requestScrobbleEdit; then
                 logFailedEdit

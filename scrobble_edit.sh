@@ -5,7 +5,7 @@ source "utils.sh"
 # Requires following global variables to be set:
 # timestamp, silent, verbose
 
-userAgent="lfmedit/1.0.8 +https://github.com/arcctgx/lfmedit"
+userAgent="lfmedit/2.0.0-a1 +https://github.com/arcctgx/lfmedit"
 
 handleApiErrors() {
     local -r httpCode="${1}"
@@ -79,6 +79,24 @@ requestOriginalScrobbleData() {
     handleApiErrors "${httpCode}" || return 3
 }
 
+handleAlbumArtist() {
+    # There's no way to get original album artist from last.fm API.
+    # If it was not provided by -Z option, we have to guess.
+    # In most cases this will be the same as track artist.
+    if [[ ! -v originalAlbumArtist ]]; then
+        logDebug "assuming original album artist is the same as original track artist"
+        originalAlbumArtist="${originalArtist}"
+    fi
+
+    # If there's no original album, then original album artist must be blank too.
+    if [[ -z "${originalAlbum}" ]]; then
+        logDebug "no original album set for scrobble, assuming empty original album artist."
+        originalAlbumArtist=""
+    fi
+
+    logDebug "originalAlbumArtist = ${originalAlbumArtist}"
+}
+
 readOriginalScrobbleData() {
     # We expect that there are at most two tracks in the response:
     # "now playing" (optional), and the one we want (always last).
@@ -107,21 +125,7 @@ readOriginalScrobbleData() {
     originalAlbum=$(jq -r '.recenttracks.track[-1].album["#text"]' "${apiResponsePath}")
     logDebug "originalTitle = ${originalTitle}, originalArtist = ${originalArtist}, originalAlbum = ${originalAlbum}"
 
-    # There's no way to get original album artist from last.fm API.
-    # If it was not provided by -Z option, we have to guess.
-    # In most cases this will be the same as track artist.
-    if [[ ! -v originalAlbumArtist ]]; then
-        logDebug "assuming original album artist is the same as original track artist"
-        originalAlbumArtist="${originalArtist}"
-    fi
-
-    # If there's no original album, then original album artist must be blank too.
-    if [[ -z "${originalAlbum}" ]]; then
-        logDebug "no original album set for scrobble, assuming empty original album artist."
-        originalAlbumArtist=""
-    fi
-
-    logDebug "originalAlbumArtist = ${originalAlbumArtist}"
+    handleAlbumArtist
 
     rm -f "${verbose}" "${apiResponsePath}"
 }
