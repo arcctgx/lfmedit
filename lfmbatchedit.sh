@@ -3,8 +3,7 @@
 source "utils.sh"
 source "scrobble_edit.sh"
 
-burst_size="${LFMEDIT_BURST_SIZE:-15}"
-burst_interval="${LFMEDIT_BURST_INTERVAL:-25}"
+editDelaySec="${LFMEDIT_EDIT_DELAY_SEC:-1.8}"
 
 usage() {
     echo "usage: $(basename "$0") [options] <file> [file2 ...]"
@@ -33,6 +32,8 @@ parseArguments() {
             V)
                 enableVerification="yes"
                 logDebug "Verification of edits is enabled."
+                # verification doubles the number of requests per edit, so double the delay too:
+                editDelaySec="$(echo "2*${editDelaySec}" | bc -l)"
                 ;;
             d)
                 ((debugLevel++))
@@ -58,7 +59,7 @@ parseArguments() {
         set -x
     fi
 
-    logDebug "burst size: ${burst_size}, burst interval: ${burst_interval}"
+    logDebug "edit delay: ${editDelaySec} seconds"
     logDebug "args = ${*}"
 
     shift $((OPTIND-1))
@@ -140,10 +141,9 @@ applyChangesFrom() {
 
             logAppliedEdit
 
-            if [[ ! -v dryRun ]] || [[ "${dryRun}" != "yes" ]] &&
-                (( n % burst_size == 0 )) && [[ ${remaining} -ne 0 ]]; then
-                echo
-                pauseEditing "${burst_interval}"
+            if [[ ! -v dryRun ]] || [[ "${dryRun}" != "yes" ]] && [[ ${remaining} -ne 0 ]]; then
+                logDebug "waiting ${editDelaySec} seconds..."
+                sleep "${editDelaySec}s"
             fi
         done
 

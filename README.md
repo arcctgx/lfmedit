@@ -15,6 +15,7 @@ command line, which makes it possible to automate the editing process.
 * `bash`
 * `curl`
 * `jq`
+* `bc`
 * Last.fm subscription
 
 ### Authentication
