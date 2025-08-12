@@ -5,7 +5,7 @@ source "utils.sh"
 # Requires following global variables to be set:
 # timestamp, silent, verbose
 
-userAgent="lfmedit/1.0.7 +https://github.com/arcctgx/lfmedit"
+userAgent="lfmedit/1.0.8-a1 +https://github.com/arcctgx/lfmedit"
 
 handleApiErrors() {
     local -r httpCode="${1}"
@@ -194,6 +194,61 @@ printEditData() {
     echo -e "\e[92m+${timestamp}    ${newTitle}    ${newArtist}    ${newAlbum}    ${newAlbumArtist}\e[0m"
 }
 
+getCsrfMiddlewareToken() {
+    # Do an authenticated GET request to fetch any user page that contains
+    # a form. Extract the csfmiddlewaretoken from a hidden form field and
+    # set it globally in the script. The token is not ephemeral (I think it
+    # is valid as long as the csrftoken cookie is valid), so we can fetch
+    # it once and reuse it as many times as needed.
+
+    if [[ -n "${csrfmiddlewaretoken}" ]]; then
+        logDebug "CSRF middleware token is already set"
+        return 0
+    fi
+
+    logDebug "need to fetch CSRF middleware token"
+
+    local -r url="https://www.last.fm/user/${lastfm_username}/library"
+    local httpCode=""
+    local curlStatus=""
+
+    local -r tokenResponsePath="$(mktemp -t lfmedit-csrf.html.XXXXXX)"
+    logDebug "tokenResponsePath = ${tokenResponsePath}"
+
+    # shellcheck disable=SC2086
+    httpCode="$(curl ${silent} -w "%{http_code}\n" -o "${tokenResponsePath}" "${url}" \
+        --compressed \
+        --user-agent "${userAgent}" \
+        --cookie "csrftoken=${lastfm_csrf}; sessionid=${lastfm_session_id}")"
+    curlStatus="${?}"
+
+    if [[ "${curlStatus}" -ne 0 ]]; then
+        logError "failed to send request for CSRF middleware token! curl error = ${curlStatus}"
+        rm -f "${verbose}" "${tokenResponsePath}"
+        return 1
+    fi
+
+    logDebug "request for CSRF middleware token was sent, httpCode = ${httpCode}"
+
+    if [[ "${httpCode}" -ne 200 ]]; then
+        logError "HTTP error ${httpCode} when getting CSRF middleware token!"
+        rm -f "${verbose}" "${tokenResponsePath}"
+        return 2
+    fi
+
+    csrfmiddlewaretoken=$(grep -m1 "input.*hidden.*csrfmiddlewaretoken.*value=" "${tokenResponsePath}" |
+        grep -o -E "[A-Za-z0-9]{64}")
+    # alternative: grep -m1 csrfmiddlewaretoken "${tokenResponsePath}" | cut -d\' -f6
+    rm -f "${verbose}" "${tokenResponsePath}"
+
+    if [[ ! -n "${csrfmiddlewaretoken}" ]]; then
+        logError "Failed to find CSRF middleware token in the response body!"
+        return 3
+    fi
+
+    logDebug "CSRF middleware token = ${csrfmiddlewaretoken}"
+}
+
 requestScrobbleEdit() {
     setNewScrobbleData
 
@@ -209,13 +264,14 @@ requestScrobbleEdit() {
     local curlStatus=""
 
     requestConfirmation || return 2
+    getCsrfMiddlewareToken || return 10
 
     # shellcheck disable=SC2086
     httpCode=$(curl ${silent} -o /dev/null -w "%{http_code}\n" "${url}" \
         --user-agent "${userAgent}" \
         --referer "${referer}" \
         --cookie "${cookies}" \
-        --data-urlencode "csrfmiddlewaretoken=${lastfm_csrf}" \
+        --data-urlencode "csrfmiddlewaretoken=${csrfmiddlewaretoken}" \
         --data-urlencode "track_name=${newTitle}" \
         --data-urlencode "artist_name=${newArtist}" \
         --data-urlencode "album_name=${newAlbum}" \
@@ -225,7 +281,8 @@ requestScrobbleEdit() {
         --data-urlencode "artist_name_original=${originalArtist}" \
         --data-urlencode "album_name_original=${originalAlbum}" \
         --data-urlencode "album_artist_name_original=${originalAlbumArtist}" \
-        --data-urlencode "submit=edit-scrobble")
+        --data-urlencode "submit=edit-scrobble" \
+        --data-urlencode "ajax=1")
     curlStatus="${?}"
 
     if [[ ${curlStatus} -ne 0 ]]; then
@@ -277,17 +334,20 @@ verifyScrobbleEdit() {
     local httpCode=""
     local curlStatus=""
 
+    getCsrfMiddlewareToken || return 10
+
     # shellcheck disable=SC2086
     httpCode=$(curl ${silent} -o /dev/null -w "%{http_code}\n" "${url}" \
         --user-agent "${userAgent}" \
         --referer "${referer}" \
         --cookie "${cookies}" \
-        --data-urlencode "csrfmiddlewaretoken=${lastfm_csrf}" \
+        --data-urlencode "csrfmiddlewaretoken=${csrfmiddlewaretoken}" \
         --data-urlencode "artist_name=${newArtist}" \
         --data-urlencode "track_name=${newTitle}" \
         --data-urlencode "album_name=${newAlbum}" \
         --data-urlencode "album_artist_name=${newAlbumArtist}" \
-        --data-urlencode "timestamp=${timestamp}")
+        --data-urlencode "timestamp=${timestamp}" \
+        --data-urlencode "ajax=1")
     curlStatus="${?}"
 
     if [[ ${curlStatus} -ne 0 ]]; then

@@ -7,10 +7,10 @@
 export lastfm_username=""
 
 # Last.fm session ID. Stored in your browser as "sessionid" cookie. Very long
-# (more than 600 bytes), often begins with ".eJyNk". Be careful: it is valid
-# for one year and is not invalidated by logging out of Last.fm!
+# (more than 600 bytes), often begins with ".eJy". Be careful: it is valid for
+# one year and is not invalidated by logging out of Last.fm!
 export lastfm_session_id=""
 
-# Last.fm CSRF token. Stored in your browser as "csrftoken" cookie. 64 bytes
-# long.
+# Last.fm "long-term" CSRF token. Stored in your browser as "csrftoken" cookie.
+# 32 bytes long (as of August 2025).
 export lastfm_csrf=""
