@@ -46,20 +46,16 @@ directory. See the sample file for details.
 
 #### Change the title and artist of a single scrobble
 
-```text
-$ ./lfmedit.sh -V -u 1616948298 -t "Damnation" -a "Nine Inch Nails"
-INF: requestScrobbleEdit(): This is the edit that will be applied:
--1616948298    [Castle of the Damned]    Trent Reznor    Quake    Trent Reznor
-+1616948298    Damnation    Nine Inch Nails    Quake    Nine Inch Nails
-Proceed? (uppercase Y to confirm, anything else to abort): Y
-INF: verifyScrobbleEdit(): verification passed! Scrobble edited successfully
-```
+![Edit a single scrobble with lfmedit.sh](img/single_edit.gif)
 
 The parameter `-u` is mandatory because Last.fm seems to be using the Unix timestamp
 as scrobble ID. Apart from the timestamp, it's only required to set options
-corresponding to fields you want to change - in this example only the title and
-artist are modified, the album stays the same. Note that the album artist (last
-column) was automatically changed to match the new track artist.
+corresponding to fields you want to change - in this example only the album title
+is added, the remaining fields stay the same. The album artist information missing
+from the original scrobble is automatically updated (note the last column of the new
+scrobble data), and matches the track artist. If this is not correct (e.g. because the
+release is a Various Artists compilation) use the `-Z` option to specify the album artist
+yourself.
 
 It is possible to remove information (e.g. passing `-b ""` will remove album field
 from the scrobble), but it's not allowed to remove artist or title.
