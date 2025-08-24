@@ -3,7 +3,7 @@
 source "utils.sh"
 source "scrobble_edit.sh"
 
-editDelaySec="${LFMEDIT_EDIT_DELAY_SEC:-1.8}"
+editDelaySec="${LFMEDIT_EDIT_DELAY_SEC:-0.5}"
 
 usage() {
     echo "usage: $(basename "$0") [options] <file> [file2 ...]"
