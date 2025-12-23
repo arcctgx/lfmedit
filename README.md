@@ -8,6 +8,11 @@ editing scrobbles.
 `lfmedit.sh` and `lfmbatchedit.sh` allow sending scrobble edit requests from the
 command line, which makes it possible to automate the editing process.
 
+These scripts were created to support way of working based on an Last.fm scrobble
+export. The idea is to have the export data under version control, introduce local
+changes using dedicated tooling and finally apply these changes on Last.fm end
+using `lfmbatchedit.sh`.
+
 ## Using the scripts
 
 ### Requirements
@@ -70,28 +75,20 @@ confirmation. Run the scripts with `-h` switch to get the full list of supported
   scripts try to make an assumption, but there is no guarantee it will be correct.
   If `lfmedit.sh` makes a wrong assumption which causes an edit to fail, it's possible
   to override it using `-Z` command line option.
-* "Unknown Date" scrobbles cannot be edited. This is a consequence of getting original
-  scrobble data from the API: the timestamps of these scrobbles are artificial and not
-  unique, so original scrobble data cannot be retrieved by timestamp query.
+* `lfmbatchedit.sh` currently does not support `-Z` option.
 * Edit verification is not very reliable - I've seen both false positives and false
   negatives in my testing. For this reason verification is disabled by default. It
   can be enabled using `-V` option.
-* It's slow. For each scrobble edit the script sends one Last.fm API request to get
-  original scrobble data, then a POST request to edit the scrobble, and another POST
-  request to verify the edit. This involves spawning several `curl` and `jq` processes,
-  plus the network overhead also plays a role. `lfmbatchedit.sh` sends edit requests
-  sequentially, and sometimes Last.fm is slow to respond. Furthermore, at some time
-  between May 2022 and May 2023 Last.fm implemented rate limiting, which required
-  adding delays to `lfmbatchedit.sh` to avoid throttling.
 
 ## Further development
 
-None. At least not in this repo.
+I consider current implementation feature-complete.
 
 This was supposed to be a quick-and-dirty proof of concept, and this is the reason
 it was initially written in Bash. As the handling of errors and edge cases grew more
 complex, I realised this needs to be rewritten in a different programming language.
-I intend to do that when I find more time.
+For this reason I was reluctant to spend more time on the Bash implementation. But
+now that there is no real hope of making the editing process any faster because of
+throttling on Last.fm end, rewriting this code does not make much sense.
 
-If any bugs are reported I'll look into fixing them, but I don't want to add more
-features to Bash implementation.
+If any bugs are reported I'll look into fixing them.
