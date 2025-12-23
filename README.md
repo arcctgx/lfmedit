@@ -135,4 +135,7 @@ For this reason I was reluctant to spend more time on the Bash implementation. B
 now that there is no real hope of making the editing process any faster because of
 throttling on Last.fm end, rewriting this code does not make much sense.
 
+The edit rate has been significantly improved in `v2.0.0`, and I'm not sure what else
+could be be done to make it faster.
+
 If any bugs are reported I'll look into fixing them.
